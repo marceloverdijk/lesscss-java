@@ -1,5 +1,5 @@
-lesscss-java
-============
+LESS CSS Compiler for Java
+==========================
 
 LESS CSS Compiler for Java is a library to compile LESS sources to CSS stylesheets.
 
@@ -42,7 +42,7 @@ Non-Maven users should download the latest version and add it to the project's c
 Compatibility
 -------------
 
-The LESS CSS Compiler for Java contains all LESS compatibility tests. All tests pass, except the @import test case which fails partially as the compiler does not support the media query import feature (yet). See also issue #1.
+The LESS CSS Compiler for Java contains all LESS compatibility tests. All tests pass, except the @import test case which fails partially as the compiler does not support the media query import feature (yet).
 
 The project also contains integration tests for compiling the Twitter Bootstrap (http://twitter.github.com/bootstrap/) library. If you are using another 3th party LESS library you want to be added to the integration tests, just create a issue and provide a link to the library.
 
@@ -50,7 +50,7 @@ The project also contains integration tests for compiling the Twitter Bootstrap 
 Support
 -------
 
-Have a question, or found an issue? Just create a GitHub issue.
+Have a question, or found an issue? Just create a issue: https://github.com/marceloverdijk/lesscss-java/issues
 
 
 Authors
