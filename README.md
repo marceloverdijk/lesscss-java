@@ -16,6 +16,42 @@ Look at the simple example below to compile LESS to CSS:
     // Or compile LESS input file to CSS output file
     lessCompiler.compile(new File("main.less"), new File("main.css"));
 
+To learn more about LESS, please see http://lesscss.org/.
+
+
+Getting Started
+---------------
+
+Maven users should add the library using the following dependency:
+
+
+    <dependency>
+      <groupId>org.lesscss</groupId>
+      <artifactId>lesscss</artifactId>
+      <version>1.3.0</version>
+    </dependency>
+
+Non-Maven users should download the latest version and add it to the project's classpath. Also the following dependencies are required:
+
++ <a href="http://commons.apache.org/io/">Apache Commons IO 2.1</a>
++ <a href="http://commons.apache.org/lang/">Apache Commons Lang 3.1</a>
++ <a href="http://commons.apache.org/logging/">Apache Commons Logging 1.1.1</a>
++ <a href="http://www.mozilla.org/rhino/">Rhino: JavaScript for Java 1.7R3</a>
+
+
+Compatibility
+-------------
+
+The LESS CSS Compiler for Java contains all LESS compatibility tests. All tests pass, except the @import test case which fails partially as the compiler does not support the media query import feature (yet). See also issue #1.
+
+The project also contains integration tests for compiling the Twitter Bootstrap (http://twitter.github.com/bootstrap/) library. If you are using another 3th party LESS library you want to be added to the integration tests, just create a issue and provide a link to the library.
+
+
+Support
+-------
+
+Have a question, or found an issue? Just create a GitHub issue.
+
 
 Authors
 -------
