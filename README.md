@@ -24,7 +24,6 @@ Getting Started
 
 Maven users should add the library using the following dependency:
 
-
     <dependency>
       <groupId>org.lesscss</groupId>
       <artifactId>lesscss</artifactId>
