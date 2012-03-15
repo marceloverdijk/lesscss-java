@@ -1,5 +1,5 @@
-LESS CSS Compiler for Java
-==========================
+Official LESS CSS Compiler for Java
+===================================
 
 LESS CSS Compiler for Java is a library to compile LESS sources to CSS stylesheets.
 
