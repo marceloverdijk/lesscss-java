@@ -64,7 +64,10 @@ Can be built with [Maven 2.2.x](http://maven.apache.org) (or later?) by using th
 or, to install into your local Maven repository:
 
     mvn install
+    
+You may also wish to build API Documentation:
 
+    mvn javadoc:javadoc
 
 Authors
 -------
