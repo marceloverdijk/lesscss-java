@@ -15,6 +15,7 @@
 package org.lesscss;
 
 import static java.util.regex.Pattern.MULTILINE;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -22,7 +23,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.io.FileUtils;
 
 /**
  * Represents the metadata and content of a LESS source.
@@ -36,10 +36,11 @@ public class LessSource {
      */
     private static final Pattern IMPORT_PATTERN = Pattern.compile("^(?!\\s*//\\s*)@import\\s+(url\\()?\\s*\"(.+)\\s*\"(\\))?\\s*;.*$", MULTILINE);
     
-    private File file;
+    private String filename;
     private String content;
     private String normalizedContent;
     private Map<String, LessSource> imports = new LinkedHashMap<String, LessSource>();
+    private LessResolver resolver;
     
     /**
      * Constructs a new <code>LessSource</code>.
@@ -58,9 +59,28 @@ public class LessSource {
         if (!file.exists()) { 
             throw new FileNotFoundException("File " + file.getAbsolutePath() + " not found.");
         }
-        this.file = file;
-        this.content = this.normalizedContent = FileUtils.readFileToString(file);
-        resolveImports();
+        init(file.getAbsolutePath(), new FileResolver(file));
+    }
+    
+    public LessSource(String filename) throws FileNotFoundException, IOException {
+      if (filename == null) {
+        throw new IllegalArgumentException("Filename not be null.");
+      }
+      init(filename, new FileResolver());
+    }
+    
+    public LessSource(String filename, LessResolver resolver) throws FileNotFoundException, IOException {
+      if (filename == null) {
+        throw new IllegalArgumentException("Filename not be null.");
+      }
+      init(filename, resolver);
+    }
+    
+    public void init(String filename, LessResolver resolver) throws FileNotFoundException, IOException {
+      this.resolver = resolver;
+      this.filename = filename;
+      this.content = this.normalizedContent = resolver.resolve(filename);
+      resolveImports();
     }
     
     /**
@@ -69,7 +89,7 @@ public class LessSource {
      * @return The absolute pathname of the LESS source.
      */
     public String getAbsolutePath() {
-        return file.getAbsolutePath();
+        return filename;
     }
     
     /**
@@ -101,7 +121,7 @@ public class LessSource {
      * @return A <code>long</code> value representing the time the file was last modified, measured in milliseconds since the epoch (00:00:00 GMT, January 1, 1970).
      */
     public long getLastModified() {
-        return file.lastModified();
+      return resolver.getLastModified(filename);
     }
     
     /**
@@ -142,7 +162,7 @@ public class LessSource {
             importedFile = importedFile.matches(".*(le?|c)ss$") ? importedFile : importedFile + ".less";
             boolean css = importedFile.matches(".*css$");
             if (!css) {
-                    LessSource importedLessSource = new LessSource(new File(file.getParentFile(), importedFile));
+              LessSource importedLessSource = new LessSource(importedFile, resolver.resolveImport(filename, importedFile));
                     imports.put(importedFile, importedLessSource);
                     normalizedContent = normalizedContent.substring(0, importMatcher.start()) + importedLessSource.getNormalizedContent() + normalizedContent.substring(importMatcher.end());
                     importMatcher = IMPORT_PATTERN.matcher(normalizedContent);

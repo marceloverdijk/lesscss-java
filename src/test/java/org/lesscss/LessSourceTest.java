@@ -18,10 +18,12 @@ import static org.junit.Assert.assertEquals;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.Before;
@@ -30,8 +32,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-
-import org.lesscss.LessSource;
 
 @PrepareForTest({FileUtils.class, LessSource.class})
 @RunWith(PowerMockRunner.class)
@@ -82,7 +82,7 @@ public class LessSourceTest {
     
     @Test(expected = IllegalArgumentException.class)
     public void testNewLessSourceFileNull() throws Exception {
-        lessSource = new LessSource(null); 
+        lessSource = new LessSource((File) null); 
     }
     
     @Test(expected = FileNotFoundException.class)
