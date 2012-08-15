@@ -13,6 +13,6 @@ public interface LessResolver {
 
   long getLastModified(String filename);
 
-  LessResolver resolveImport(String parent, String importName);
+  LessResolver resolveImport(String parent);
   
 }

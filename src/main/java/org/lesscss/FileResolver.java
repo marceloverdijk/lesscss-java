@@ -32,7 +32,7 @@ public class FileResolver implements LessResolver {
     return file(filename).lastModified();
   }
 
-  public FileResolver resolveImport(String parent, String importName) {
+  public FileResolver resolveImport(String parent) {
     return new FileResolver(file(parent));
   }
 

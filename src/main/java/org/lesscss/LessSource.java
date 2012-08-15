@@ -162,7 +162,7 @@ public class LessSource {
             importedFile = importedFile.matches(".*(le?|c)ss$") ? importedFile : importedFile + ".less";
             boolean css = importedFile.matches(".*css$");
             if (!css) {
-              LessSource importedLessSource = new LessSource(importedFile, resolver.resolveImport(filename, importedFile));
+              LessSource importedLessSource = new LessSource(importedFile, resolver.resolveImport(filename));
                     imports.put(importedFile, importedLessSource);
                     normalizedContent = normalizedContent.substring(0, importMatcher.start()) + importedLessSource.getNormalizedContent() + normalizedContent.substring(importMatcher.end());
                     importMatcher = IMPORT_PATTERN.matcher(normalizedContent);
