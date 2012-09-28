@@ -291,7 +291,7 @@ public class LessCompiler {
             if (e instanceof JavaScriptException) {
                 Scriptable value = (Scriptable)((JavaScriptException)e).getValue();
                 if (value != null && ScriptableObject.hasProperty(value, "message")) {
-                    String message = (String)ScriptableObject.getProperty(value, "message");
+                    String message = ScriptableObject.getProperty(value, "message").toString();
                     throw new LessException(message, e);
                 }
             }
