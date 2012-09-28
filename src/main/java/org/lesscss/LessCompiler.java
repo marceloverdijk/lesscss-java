@@ -60,7 +60,7 @@ public class LessCompiler {
 
     private static final String COMPILE_STRING = "function doIt(input, compress) { var result; var parser = new less.Parser(); parser.parse(input, function(e, tree) { if (e instanceof Object) { throw e; } ; result = tree.toCSS({compress: compress}); }); return result; }";
     
-    private Log log = LogFactory.getLog(LessCompiler.class);
+    private static final Log log = LogFactory.getLog(LessCompiler.class);
     
     private URL envJs = LessCompiler.class.getClassLoader().getResource("META-INF/env.rhino.js");
     private URL lessJs = LessCompiler.class.getClassLoader().getResource("META-INF/less.js");
