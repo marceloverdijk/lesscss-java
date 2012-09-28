@@ -30,6 +30,8 @@ Maven users should add the library using the following dependency:
       <version>1.3.0</version>
     </dependency>
 
+(lesscss-java is in the Maven Central repository.)
+
 Non-Maven users should download the latest version and add it to the project's classpath. Also the following dependencies are required:
 
 + <a href="http://commons.apache.org/io/">Apache Commons IO 2.1</a>
@@ -51,6 +53,21 @@ Support
 
 Have a question, or found an issue? Just create a issue: https://github.com/marceloverdijk/lesscss-java/issues
 
+
+Building From Source
+--------------------
+
+Can be built with [Maven 2.2.x](http://maven.apache.org) (or later?) by using the following commands:
+
+    mvn package
+
+or, to install into your local Maven repository:
+
+    mvn install
+    
+You may also wish to build API Documentation:
+
+    mvn javadoc:javadoc
 
 Authors
 -------
