@@ -309,7 +309,7 @@ public class LessCompilerTest {
         verify(doIt).call(cx, scope, null, new Object[]{less, false});
         
         verifyStatic();
-        FileUtils.writeStringToFile(outputFile, css, null);
+        FileUtils.writeStringToFile(outputFile, css, (String) null);
     }
     
     @Test
@@ -334,7 +334,7 @@ public class LessCompilerTest {
         verify(doIt).call(cx, scope, null, new Object[]{less, false});
         
         verifyStatic();
-        FileUtils.writeStringToFile(outputFile, css, null);
+        FileUtils.writeStringToFile(outputFile, css, (String) null);
     }
     
     @Test
@@ -364,7 +364,7 @@ public class LessCompilerTest {
         verify(doIt).call(cx, scope, null, new Object[]{less, false});
         
         verifyStatic();
-        FileUtils.writeStringToFile(outputFile, css, null);
+        FileUtils.writeStringToFile(outputFile, css, (String) null);
     }
     
     @Test
@@ -399,7 +399,7 @@ public class LessCompilerTest {
         verify(doIt).call(cx, scope, null, new Object[]{less, false});
         
         verifyStatic();
-        FileUtils.writeStringToFile(outputFile, css, null);
+        FileUtils.writeStringToFile(outputFile, css, (String) null);
     }
     
     @Test
@@ -464,7 +464,7 @@ public class LessCompilerTest {
         verify(doIt).call(cx, scope, null, new Object[]{less, false});
         
         verifyStatic();
-        FileUtils.writeStringToFile(outputFile, css, null);
+        FileUtils.writeStringToFile(outputFile, css, (String) null);
     }
 
     @Test
@@ -487,7 +487,7 @@ public class LessCompilerTest {
         verify(doIt).call(cx, scope, null, new Object[]{less, false});
         
         verifyStatic();
-        FileUtils.writeStringToFile(outputFile, css, null);
+        FileUtils.writeStringToFile(outputFile, css, (String) null);
     }
     
     @Test
@@ -514,7 +514,7 @@ public class LessCompilerTest {
         verify(doIt).call(cx, scope, null, new Object[]{less, false});
         
         verifyStatic();
-        FileUtils.writeStringToFile(outputFile, css, null);
+        FileUtils.writeStringToFile(outputFile, css, (String) null);
     }
     
     @Test
@@ -545,7 +545,7 @@ public class LessCompilerTest {
         verify(doIt).call(cx, scope, null, new Object[]{less, false});
         
         verifyStatic();
-        FileUtils.writeStringToFile(outputFile, css, null);
+        FileUtils.writeStringToFile(outputFile, css, (String) null);
     }
     
     @Test
