@@ -22,4 +22,9 @@ public class ImportIT extends AbstractCompileIT {
     public void testImport() throws Exception {
         testCompile(toFile("import/less/import.less"), toFile("import/css/import.css"));
     }
+
+    @Test
+    public void testImportEndsInLess() throws Exception {
+        testCompile(toFile("import/endsinless/less/import.less"), toFile("import/endsinless/css/import.css"));
+    }
 }

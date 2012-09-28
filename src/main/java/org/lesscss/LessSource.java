@@ -139,7 +139,7 @@ public class LessSource {
         Matcher importMatcher = IMPORT_PATTERN.matcher(normalizedContent);
         while (importMatcher.find()) {
             String importedFile = importMatcher.group(2);
-            importedFile = importedFile.matches(".*(le?|c)ss$") ? importedFile : importedFile + ".less";
+            importedFile = importedFile.matches(".*\\.(le?|c)ss$") ? importedFile : importedFile + ".less";
             boolean css = importedFile.matches(".*css$");
             if (!css) {
                     LessSource importedLessSource = new LessSource(new File(file.getParentFile(), importedFile));
