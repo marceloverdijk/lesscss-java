@@ -39,7 +39,7 @@ Non-Maven users should download the latest version and add it to the project's c
 + <a href="http://commons.apache.org/io/">Apache Commons IO 2.1</a>
 + <a href="http://commons.apache.org/lang/">Apache Commons Lang 3.1</a>
 + <a href="http://commons.apache.org/logging/">Apache Commons Logging 1.1.1</a>
-+ <a href="http://www.mozilla.org/rhino/">Rhino: JavaScript for Java 1.7R3</a>
++ <a href="http://www.mozilla.org/rhino/">Rhino: JavaScript for Java 1.7R4</a>
 
 
 Compatibility
