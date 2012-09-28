@@ -78,6 +78,10 @@ Authors
 + http://twitter.com/marceloverdijk
 + http://github.com/marceloverdijk
 
+**Craig Andrews**
+
++ candrews@integralblue.com
++ http://candrews.integralblue.com
 
 Copyright and License
 ---------------------
