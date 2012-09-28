@@ -93,12 +93,10 @@ public class LessCompiler {
      * 
      * @param envJs The Envjs JavaScript file used by the compiler.
      */
-    public void setEnvJs(URL envJs) {
-    	synchronized(this){
-    		if (scope != null) {
-    			throw new IllegalStateException("This method can only be called before init()");
-    		}
-    	}
+    public synchronized void setEnvJs(URL envJs) {
+        if (scope != null) {
+            throw new IllegalStateException("This method can only be called before init()");
+        }
         this.envJs = envJs;
     }
     
@@ -117,12 +115,10 @@ public class LessCompiler {
      * 
      * @param The LESS JavaScript file used by the compiler.
      */
-    public void setLessJs(URL lessJs) {
-    	synchronized(this){
-    		if (scope != null) {
-    			throw new IllegalStateException("This method can only be called before init()");
-    		}
-    	}
+    public synchronized void setLessJs(URL lessJs) {
+        if (scope != null) {
+            throw new IllegalStateException("This method can only be called before init()");
+        }
         this.lessJs = lessJs;
     }
     
@@ -141,12 +137,10 @@ public class LessCompiler {
      * 
      * @param customJs A single custom JavaScript file used by the compiler.
      */
-    public void setCustomJs(URL customJs) {
-    	synchronized(this){
-    		if (scope != null) {
-    			throw new IllegalStateException("This method can only be called before init()");
-    		}
-    	}
+    public synchronized void setCustomJs(URL customJs) {
+        if (scope != null) {
+            throw new IllegalStateException("This method can only be called before init()");
+        }
         this.customJs = Collections.singletonList(customJs);
     }
     
@@ -156,12 +150,10 @@ public class LessCompiler {
      * 
      * @param customJs The custom JavaScript files used by the compiler.
      */
-    public void setCustomJs(List<URL> customJs) {
-    	synchronized(this){
-    		if (scope != null) {
-    			throw new IllegalStateException("This method can only be called before init()");
-    		}
-    	}
+    public synchronized void setCustomJs(List<URL> customJs) {
+        if (scope != null) {
+            throw new IllegalStateException("This method can only be called before init()");
+        }
     	// copy the list so there's no way for anyone else who holds a reference to the list to modify it
         this.customJs = new ArrayList<URL>(customJs);
     }
@@ -181,12 +173,10 @@ public class LessCompiler {
      * 
      * @param compress If <code>true</code>, sets the compiler to compress the CSS.
      */
-    public void setCompress(boolean compress) {
-    	synchronized(this){
-    		if (scope != null) {
-    			throw new IllegalStateException("This method can only be called before init()");
-    		}
-    	}
+    public synchronized void setCompress(boolean compress) {
+        if (scope != null) {
+            throw new IllegalStateException("This method can only be called before init()");
+        }
         this.compress = compress;
     }
     
@@ -206,12 +196,10 @@ public class LessCompiler {
      * 
      * @param The character encoding used by the compiler when writing the output <code>File</code>.
      */
-    public void setEncoding(String encoding) {
-    	synchronized(this){
-    		if (scope != null) {
-    			throw new IllegalStateException("This method can only be called before init()");
-    		}
-    	}
+    public synchronized void setEncoding(String encoding) {
+        if (scope != null) {
+            throw new IllegalStateException("This method can only be called before init()");
+        }
         this.encoding = encoding;
     }
     
