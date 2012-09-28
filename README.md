@@ -16,6 +16,8 @@ Look at the simple example below to compile LESS to CSS:
     // Or compile LESS input file to CSS output file
     lessCompiler.compile(new File("main.less"), new File("main.css"));
 
+LessCompiler is thread safe. In other words, an application only needs one LessCompiler that it can reuse whenever necessary.
+
 To learn more about LESS, please see http://lesscss.org/.
 
 
