@@ -25,6 +25,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Function;
 import org.mozilla.javascript.JavaScriptException;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
@@ -57,7 +58,7 @@ import org.mozilla.javascript.tools.shell.Global;
  */
 public class LessCompiler {
 
-    private static final String COMPILE_STRING = "var result; var parser = new(less.Parser); parser.parse(input, function (e, tree) { if (e instanceof Object) { throw e } result = tree.toCSS({compress: %b}) });";
+    private static final String COMPILE_STRING = "function doIt(input, compress) { var result; var parser = new less.Parser(); parser.parse(input, function(e, tree) { if (e instanceof Object) { throw e; } ; result = tree.toCSS({compress: compress}); }); return result; }";
     
     private Log log = LogFactory.getLog(LessCompiler.class);
     
@@ -67,7 +68,8 @@ public class LessCompiler {
     private boolean compress = false;
     private String encoding = null;
     
-    private Context cx;
+    private Function doIt;
+    
     private Scriptable scope;
     
     /**
@@ -92,12 +94,17 @@ public class LessCompiler {
      * @param envJs The Envjs JavaScript file used by the compiler.
      */
     public void setEnvJs(URL envJs) {
+    	synchronized(this){
+    		if (scope != null) {
+    			throw new IllegalStateException("This method can only be called before init()");
+    		}
+    	}
         this.envJs = envJs;
     }
     
     /**
      * Returns the LESS JavaScript file used by the compiler.
-     * 
+     * COMPILE_STRING
      * @return The LESS JavaScript file used by the compiler.
      */
     public URL getLessJs() {
@@ -111,6 +118,11 @@ public class LessCompiler {
      * @param The LESS JavaScript file used by the compiler.
      */
     public void setLessJs(URL lessJs) {
+    	synchronized(this){
+    		if (scope != null) {
+    			throw new IllegalStateException("This method can only be called before init()");
+    		}
+    	}
         this.lessJs = lessJs;
     }
     
@@ -120,7 +132,7 @@ public class LessCompiler {
      * @return The custom JavaScript files used by the compiler.
      */
     public List<URL> getCustomJs() {
-        return customJs;
+        return Collections.unmodifiableList(customJs);
     }
     
     /**
@@ -130,8 +142,12 @@ public class LessCompiler {
      * @param customJs A single custom JavaScript file used by the compiler.
      */
     public void setCustomJs(URL customJs) {
-        this.customJs = new ArrayList<URL>();
-        this.customJs.add(customJs);
+    	synchronized(this){
+    		if (scope != null) {
+    			throw new IllegalStateException("This method can only be called before init()");
+    		}
+    	}
+        this.customJs = Collections.singletonList(customJs);
     }
     
     /**
@@ -141,7 +157,13 @@ public class LessCompiler {
      * @param customJs The custom JavaScript files used by the compiler.
      */
     public void setCustomJs(List<URL> customJs) {
-        this.customJs = customJs;
+    	synchronized(this){
+    		if (scope != null) {
+    			throw new IllegalStateException("This method can only be called before init()");
+    		}
+    	}
+    	// copy the list so there's no way for anyone else who holds a reference to the list to modify it
+        this.customJs = new ArrayList<URL>(customJs);
     }
     
     /**
@@ -155,10 +177,16 @@ public class LessCompiler {
     
     /**
      * Sets the compiler to compress the CSS.
+     * Must be set before {@link #init()} is called.
      * 
      * @param compress If <code>true</code>, sets the compiler to compress the CSS.
      */
     public void setCompress(boolean compress) {
+    	synchronized(this){
+    		if (scope != null) {
+    			throw new IllegalStateException("This method can only be called before init()");
+    		}
+    	}
         this.compress = compress;
     }
     
@@ -174,10 +202,16 @@ public class LessCompiler {
     /**
      * Sets the character encoding used by the compiler when writing the output <code>File</code>.
      * If not set the platform default will be used.
+     * Must be set before {@link #init()} is called.
      * 
      * @param The character encoding used by the compiler when writing the output <code>File</code>.
      */
     public void setEncoding(String encoding) {
+    	synchronized(this){
+    		if (scope != null) {
+    			throw new IllegalStateException("This method can only be called before init()");
+    		}
+    	}
         this.encoding = encoding;
     }
     
@@ -187,30 +221,40 @@ public class LessCompiler {
      * It is not needed to call this method manually, as it is called implicitly by the compile methods if needed.
      * </p>
      */
-    public void init() {
+    public synchronized void init() {
         long start = System.currentTimeMillis();
-        
-        cx = Context.enter();
-        cx.setOptimizationLevel(-1); 
-        cx.setLanguageVersion(Context.VERSION_1_7);
-        
-        Global global = new Global(); 
-        global.init(cx); 
-        
-        scope = cx.initStandardObjects(global);
-        
+
         try {
-            cx.evaluateReader(scope, new InputStreamReader(envJs.openConnection().getInputStream()), "env.rhino.js", 1, null);
-            cx.evaluateReader(scope, new InputStreamReader(lessJs.openConnection().getInputStream()), "less.js", 1, null);
-            
-            for (URL url : customJs) {
-                cx.evaluateReader(scope, new InputStreamReader(url.openConnection().getInputStream()), url.toString(), 1, null);
-            }
+	        Context cx = Context.enter();
+	        cx.setOptimizationLevel(-1); 
+	        cx.setLanguageVersion(Context.VERSION_1_7);
+	        
+	        Global global = new Global(); 
+	        global.init(cx); 
+	        
+	        scope = cx.initStandardObjects(global);
+	        
+	        List<URL> jsUrls = new ArrayList<URL>(2 + customJs.size());
+	        jsUrls.add(envJs);
+	        jsUrls.add(lessJs);
+	        jsUrls.addAll(customJs);
+	        
+	        for(URL url : jsUrls){
+		        InputStreamReader inputStreamReader = new InputStreamReader(url.openConnection().getInputStream());
+		        try{
+		        	cx.evaluateReader(scope, inputStreamReader, url.toString(), 1, null);
+		        }finally{
+		        	inputStreamReader.close();
+		        }
+	        }
+            doIt = cx.compileFunction(scope, COMPILE_STRING, "doIt.js", 1, null);
         }
         catch (Exception e) {
             String message = "Failed to initialize LESS compiler.";
             log.error(message, e);
             throw new IllegalStateException(message, e);
+        }finally{
+        	Context.exit();
         }
         
         if (log.isDebugEnabled()) {
@@ -225,18 +269,17 @@ public class LessCompiler {
      * @return The CSS.
      */
     public String compile(String input) throws LessException {
-        if (cx == null) {
-            init();
-        }
+    	synchronized(this){
+	        if (scope == null) {
+	            init();
+	        }
+    	}
         
         long start = System.currentTimeMillis();
         
         try {
-            scope.put("input", scope, input);
-            scope.put("result", scope, "");
-            
-            cx.evaluateString(scope, String.format(COMPILE_STRING, compress), "compile.js", 1, null);
-            Object result = scope.get("result", scope);
+        	Context cx = Context.enter();
+            Object result = doIt.call(cx, scope, null, new Object[]{input, compress});
             
             if (log.isDebugEnabled()) {
                 log.debug("Finished compilation of LESS source in " + (System.currentTimeMillis() - start) + " ms.");
@@ -253,6 +296,8 @@ public class LessCompiler {
                 }
             }
             throw new LessException(e);
+        }finally{
+        	Context.exit();
         }
     }
     
