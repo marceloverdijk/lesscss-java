@@ -162,16 +162,19 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>commons-logging:commons-logging</exclude>
+                                    <exclude>org.mozilla:rhino</exclude>
+                                </excludes>
+                            </artifactSet>
                             <relocations>
                                 <relocation>
-                                    <pattern>org.apache.commons</pattern>
-                                    <shadedPattern>internaldeps.org.apache.commons</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.mozilla</pattern>
-                                    <shadedPattern>internaldeps.org.mozilla</shadedPattern>
+                                    <pattern>org.apache.commons.io</pattern>
+                                    <shadedPattern>internaldeps.org.apache.commons.io</shadedPattern>
                                 </relocation>
                             </relocations>
+                            <minimizeJar>true</minimizeJar>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <shadedClassifierName>deps</shadedClassifierName>
                         </configuration>
