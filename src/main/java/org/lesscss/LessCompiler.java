@@ -113,7 +113,7 @@ public class LessCompiler {
      * Sets the LESS JavaScript file used by the compiler.
      * Must be set before {@link #init()} is called.
      * 
-     * @param The LESS JavaScript file used by the compiler.
+     * @param lessJs The LESS JavaScript file used by the compiler.
      */
     public synchronized void setLessJs(URL lessJs) {
         if (scope != null) {
@@ -194,7 +194,7 @@ public class LessCompiler {
      * If not set the platform default will be used.
      * Must be set before {@link #init()} is called.
      * 
-     * @param The character encoding used by the compiler when writing the output <code>File</code>.
+     * @param encoding The character encoding used by the compiler when writing the output <code>File</code>.
      */
     public synchronized void setEncoding(String encoding) {
         if (scope != null) {
@@ -360,4 +360,19 @@ public class LessCompiler {
             FileUtils.writeStringToFile(output, data, encoding);
         }
     }
+
+    /**
+     * Compiles the input <code>File</code> to CSS and returns the css source.
+     * @param input The input less file to compile.
+     * @param searchPath The searchPath for imports to use. The first one that finds a resource wins.
+     * @return
+     * @throws IOException
+     * @throws LessException
+     */
+    public String compile(File input, File... searchPath) throws IOException, LessException {
+        LessResolver resolver = new FileResolver(input, searchPath);
+        LessSource source = new LessSource(input.getAbsolutePath(), resolver);
+        return compile(source);
+    }
+
 }
