@@ -375,4 +375,26 @@ public class LessCompiler {
         return compile(source);
     }
 
+    /**
+     * Compiles the input <code>File</code> to CSS and writes the result to a File.
+     * @param input The input less file to compile.
+     * @param output The output <code>File</code> to write the CSS to.
+     * @param force 'false' to only compile the input <code>LessSource</code> in case the LESS source has been modified (including imports) or the output file does not exists.
+     * @param searchPath The searchPath for imports to use. The first one that finds a resource wins.
+     * @return
+     * @throws IOException
+     * @throws LessException
+     */
+    public void compile(File input, File output, boolean force, File... searchPath) throws IOException, LessException {
+        if (force || !output.exists()) {
+            LessResolver resolver = new LessFileResolver(input, searchPath);
+            LessSource source = new LessSource(input.getAbsolutePath(), resolver);
+            if (output.lastModified() < source.getLastModifiedIncludingImports()) {
+                String data = compile(input);
+                FileUtils.writeStringToFile(output, data, encoding);
+            }
+        }
+    }
+
+
 }

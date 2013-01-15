@@ -154,18 +154,22 @@ public class LessSource {
     public Map<String, LessSource> getImports() {
         return imports;
     }
-    
-    private void resolveImports() throws FileNotFoundException, IOException {
+
+    /**
+     * Called when initializing this source, generates a list of imported files.
+     * @throws IOException
+     */
+    private void resolveImports() throws IOException {
         Matcher importMatcher = IMPORT_PATTERN.matcher(normalizedContent);
         while (importMatcher.find()) {
             String importedFile = importMatcher.group(2);
             importedFile = importedFile.matches(".*\\.(le?|c)ss$") ? importedFile : importedFile + ".less";
             boolean css = importedFile.matches(".*css$");
             if (!css) {
-              LessSource importedLessSource = new LessSource(importedFile, resolver.resolveImport(filename));
-                    imports.put(importedFile, importedLessSource);
-                    normalizedContent = normalizedContent.substring(0, importMatcher.start()) + importedLessSource.getNormalizedContent() + normalizedContent.substring(importMatcher.end());
-                    importMatcher = IMPORT_PATTERN.matcher(normalizedContent);
+                LessSource importedLessSource = new LessSource(importedFile, resolver.resolveImport(filename));
+                imports.put(importedFile, importedLessSource);
+                normalizedContent = normalizedContent.substring(0, importMatcher.start()) + importedLessSource.getNormalizedContent() + normalizedContent.substring(importMatcher.end());
+                importMatcher = IMPORT_PATTERN.matcher(normalizedContent);
             }
         }
     }
