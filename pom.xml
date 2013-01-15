@@ -171,16 +171,6 @@
             </roles>
             <timezone>+2</timezone>
         </developer>
-        <developer>
-            <id>candrews</id>
-            <name>Craig Andrews</name>
-            <email>candrews@integralblue.com</email>
-            <url>http://candrews.integralblue.com</url>
-            <roles>
-                <role>Developer</role>
-            </roles>
-            <timezone>-5</timezone>
-        </developer>
     </developers>
     
     <issueManagement>
