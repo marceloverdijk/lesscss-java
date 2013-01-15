@@ -7,26 +7,23 @@ import org.apache.commons.io.FileUtils;
 
 /**
  * @author Jackstf
+ * @author damaddin
  */
-public class FileResolver implements LessResolver {
+public class LessFileResolver implements LessResolver {
 
     private File file = null;
     private File[] searchPathes = null;
 
-    public FileResolver(File file) {
+    public LessFileResolver(File file) {
         this.file = file;
     }
 
-    public FileResolver(File file, File... searchPathes) {
+    public LessFileResolver(File file, File... searchPathes) {
         this.file = file;
         this.searchPathes = searchPathes;
     }
 
-    public FileResolver() {
-    }
-
-    public boolean exists(String filename) {
-        return file(filename).exists();
+    public LessFileResolver() {
     }
 
     public String resolve(String filename) throws IOException {
@@ -37,8 +34,8 @@ public class FileResolver implements LessResolver {
         return file(filename).lastModified();
     }
 
-    public FileResolver resolveImport(String parent) {
-        return new FileResolver(file(parent), searchPathes);
+    public LessFileResolver resolveImport(String parent) {
+        return new LessFileResolver(file(parent), searchPathes);
     }
 
     /**

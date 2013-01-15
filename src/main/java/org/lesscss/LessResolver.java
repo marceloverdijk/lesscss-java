@@ -7,8 +7,6 @@ import java.io.IOException;
  */
 public interface LessResolver {
 
-  boolean exists(String filename);
-
   String resolve(String filename) throws IOException;
 
   long getLastModified(String filename);

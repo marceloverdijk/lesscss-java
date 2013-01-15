@@ -370,7 +370,7 @@ public class LessCompiler {
      * @throws LessException
      */
     public String compile(File input, File... searchPath) throws IOException, LessException {
-        LessResolver resolver = new FileResolver(input, searchPath);
+        LessResolver resolver = new LessFileResolver(input, searchPath);
         LessSource source = new LessSource(input.getAbsolutePath(), resolver);
         return compile(source);
     }

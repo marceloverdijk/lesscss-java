@@ -59,14 +59,14 @@ public class LessSource {
         if (!file.exists()) { 
             throw new FileNotFoundException("File " + file.getAbsolutePath() + " not found.");
         }
-        init(file.getAbsolutePath(), new FileResolver(file));
+        init(file.getAbsolutePath(), new LessFileResolver(file));
     }
     
     public LessSource(String filename) throws FileNotFoundException, IOException {
       if (filename == null) {
         throw new IllegalArgumentException("Filename not be null.");
       }
-      init(filename, new FileResolver());
+      init(filename, new LessFileResolver());
     }
     
     public LessSource(String filename, LessResolver resolver) throws FileNotFoundException, IOException {
