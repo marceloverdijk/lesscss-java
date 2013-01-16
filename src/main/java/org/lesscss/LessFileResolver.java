@@ -2,6 +2,7 @@ package org.lesscss;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 
@@ -12,13 +13,13 @@ import org.apache.commons.io.FileUtils;
 public class LessFileResolver implements LessResolver {
 
     private File file = null;
-    private File[] searchPathes = null;
+    private List<File> searchPathes = null;
 
     public LessFileResolver(File file) {
         this.file = file;
     }
 
-    public LessFileResolver(File file, File... searchPathes) {
+    public LessFileResolver(File file, List<File> searchPathes) {
         this.file = file;
         this.searchPathes = searchPathes;
     }

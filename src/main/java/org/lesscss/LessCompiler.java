@@ -369,7 +369,7 @@ public class LessCompiler {
      * @throws IOException
      * @throws LessException
      */
-    public String compile(File input, File... searchPath) throws IOException, LessException {
+    public String compile(File input, List<File> searchPath) throws IOException, LessException {
         LessResolver resolver = new LessFileResolver(input, searchPath);
         LessSource source = new LessSource(input.getAbsolutePath(), resolver);
         return compile(source);
@@ -385,7 +385,7 @@ public class LessCompiler {
      * @throws IOException
      * @throws LessException
      */
-    public void compile(File input, File output, boolean force, File... searchPath) throws IOException, LessException {
+    public void compile(File input, File output, boolean force, List<File> searchPath) throws IOException, LessException {
         if (force || !output.exists()) {
             LessResolver resolver = new LessFileResolver(input, searchPath);
             LessSource source = new LessSource(input.getAbsolutePath(), resolver);
