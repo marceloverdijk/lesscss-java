@@ -18,6 +18,10 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.lesscss.LessCompiler;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.Assert.assertEquals;
 
 public class ImportIT extends AbstractCompileIT {
@@ -36,7 +40,10 @@ public class ImportIT extends AbstractCompileIT {
     public void testImportFallbacks() throws Exception {
         String expected = FileUtils.readFileToString(toFile("import/fallback/css/fallbacktest.css"));
         LessCompiler lessCompiler1 = new LessCompiler();
-        String actual = lessCompiler1.compile(toFile("import/fallback/fallbacktest.less"), toFile("import/fallback/override"), toFile("import/fallback/base") );
+        List<File> imports = new ArrayList<File>();
+        imports.add(toFile("import/fallback/override"));
+        imports.add(toFile("import/fallback/base"));
+        String actual = lessCompiler1.compile(toFile("import/fallback/fallbacktest.less"), imports);
         assertEquals(expected.replace("\r\n", "\n"), actual);
     }
 }
