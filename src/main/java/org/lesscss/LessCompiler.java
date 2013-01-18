@@ -390,7 +390,7 @@ public class LessCompiler {
             LessResolver resolver = new LessFileResolver(input, searchPath);
             LessSource source = new LessSource(input.getAbsolutePath(), resolver);
             if (output.lastModified() < source.getLastModifiedIncludingImports()) {
-                String data = compile(input);
+                String data = compile(source);
                 FileUtils.writeStringToFile(output, data, encoding);
             }
         }
