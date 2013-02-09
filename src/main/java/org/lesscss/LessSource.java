@@ -91,7 +91,8 @@ public class LessSource {
 	}
 
 	/**
-	 * Returns the absolute pathname of the LESS source.
+	 * Returns the absolute pathname of the LESS source. When the LessSource is
+	 * given raw String then this method returns empty string
 	 * 
 	 * @return The absolute pathname of the LESS source.
 	 */
@@ -123,7 +124,8 @@ public class LessSource {
 	}
 
 	/**
-	 * Returns the time that the LESS source was last modified.
+	 * Returns the time that the LESS source was last modified. When the
+	 * LessSource is given raw String then this method returns 0
 	 * 
 	 * @return A <code>long</code> value representing the time the file was last
 	 *         modified, measured in milliseconds since the epoch (00:00:00 GMT,
@@ -185,7 +187,8 @@ public class LessSource {
 					imports.put(importedFile, importedLessSource);
 				} else {
 					throw new IllegalArgumentException(
-							"When source is string it should not have imports to less files or use LessSource to construct source and also provide all imports to the constructor");
+							"When source is string it should not have imports to less files or use LessSource to construct source and also provide all imports to the constructor. Provide "
+									+ importedFile);
 				}
 				normalizedContent = normalizedContent.substring(0,
 						importMatcher.start())
