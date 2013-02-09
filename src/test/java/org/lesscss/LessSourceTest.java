@@ -82,7 +82,8 @@ public class LessSourceTest {
     
     @Test(expected = IllegalArgumentException.class)
     public void testNewLessSourceFileNull() throws Exception {
-        lessSource = new LessSource(null); 
+    	File file = null;
+        lessSource = new LessSource(file); 
     }
     
     @Test(expected = FileNotFoundException.class)
