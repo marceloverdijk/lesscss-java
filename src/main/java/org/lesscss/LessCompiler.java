@@ -64,6 +64,9 @@ public class LessCompiler {
 
 	private static final Log log = LogFactory.getLog(LessCompiler.class);
 
+	private URL logJs = LessCompiler.class.getClassLoader().getResource(
+	"META-INF/log.js");
+
 	private URL envJs = LessCompiler.class.getClassLoader().getResource(
 			"META-INF/env.rhino.js");
 	private URL lessJs = LessCompiler.class.getClassLoader().getResource(
@@ -105,7 +108,29 @@ public class LessCompiler {
 		}
 		this.envJs = envJs;
 	}
+	/**
+	 * Returns the LogJs JavaScript file used by the compiler.
+	 * 
+	 * @return The LogJs JavaScript file used by the compiler.
+	 */
+	public URL getLogJs() {
+		return logJs;
+	}
 
+	/**
+	 * Sets the LogJs JavaScript file used by the compiler. Must be set before
+	 * {@link #init()} is called.
+	 * 
+	 * @param logJs
+	 *            The LogJs JavaScript file used by the compiler.
+	 */
+	public synchronized void setlogJs(URL logJs) {
+		if (scope != null) {
+			throw new IllegalStateException(
+					"This method can only be called before init()");
+		}
+		this.logJs = logJs;
+	}
 	/**
 	 * Returns the LESS JavaScript file used by the compiler. COMPILE_STRING
 	 * 
@@ -244,6 +269,7 @@ public class LessCompiler {
 			scope = cx.initStandardObjects(global);
 
 			List<URL> jsUrls = new ArrayList<URL>(2 + customJs.size());
+			jsUrls.add(logJs);
 			jsUrls.add(envJs);
 			jsUrls.add(lessJs);
 			jsUrls.addAll(customJs);
