@@ -1,6 +1,13 @@
 Official LESS CSS Compiler for Java
 ===================================
 
+----------
+
+> Important note: 
+> Due to changed interesst I'm no longer maintaining this project. Based on the frequent questions I get by e-mail and requests for updates (including pull requests) I think this project would serve it's goal to be continued. Therefore if you are interested to take over and bring this project to the next level contact me.
+
+----------
+
 LESS CSS Compiler for Java is a library to compile LESS sources to CSS stylesheets.
 
 The compiler uses Rhino, Envjs (simulated browser environment written in JavaScript), and the official LESS JavaScript compiler.
