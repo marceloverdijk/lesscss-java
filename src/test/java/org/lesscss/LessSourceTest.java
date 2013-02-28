@@ -20,11 +20,13 @@ import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -40,15 +42,13 @@ public class LessSourceTest {
     private LessSource lessSource;
     
     @Mock private File file;
-    
+
     @Mock private LessSource import1;
     @Mock private LessSource import2;
     @Mock private LessSource import3;
     
     private Map<String, LessSource> imports;
-    
-    private String content = "content";
-    private String absolutePath = "path";
+
     private long lastModified = 1l;
         
     @Before
@@ -61,17 +61,13 @@ public class LessSourceTest {
     
     @Test
     public void testNewLessSourceWithoutImports() throws Exception {
-        when(file.exists()).thenReturn(true);
-        mockStatic(FileUtils.class);
-        when(FileUtils.readFileToString(file)).thenReturn(content);
-        when(file.getAbsolutePath()).thenReturn(absolutePath);
-        when(file.lastModified()).thenReturn(lastModified);
+        mockFile(true,"content","absolutePath");
         
         lessSource = new LessSource(file);
         
-        assertEquals(absolutePath, lessSource.getAbsolutePath());
-        assertEquals(content, lessSource.getContent());
-        assertEquals(content, lessSource.getNormalizedContent());
+        assertEquals("absolutePath", lessSource.getAbsolutePath());
+        assertEquals("content", lessSource.getContent());
+        assertEquals("content", lessSource.getNormalizedContent());
         assertEquals(lastModified, lessSource.getLastModified());
         assertEquals(lastModified, lessSource.getLastModifiedIncludingImports());
         assertEquals(0, lessSource.getImports().size());
@@ -93,11 +89,7 @@ public class LessSourceTest {
     
     @Test
     public void testLastModifiedIncludingImportsWhenNoImportModifiedLater() throws Exception {
-        when(file.exists()).thenReturn(true);
-        mockStatic(FileUtils.class);
-        when(FileUtils.readFileToString(file)).thenReturn(content);
-        when(file.getAbsolutePath()).thenReturn(absolutePath);
-        when(file.lastModified()).thenReturn(1l);
+        mockFile(true,"content","absolutePath");
         
         when(import1.getLastModifiedIncludingImports()).thenReturn(0l);
         when(import2.getLastModifiedIncludingImports()).thenReturn(0l);
@@ -111,11 +103,7 @@ public class LessSourceTest {
     
     @Test
     public void testLastModifiedIncludingImportsWhenImportModifiedLater() throws Exception {
-        when(file.exists()).thenReturn(true);
-        mockStatic(FileUtils.class);
-        when(FileUtils.readFileToString(file)).thenReturn(content);
-        when(file.getAbsolutePath()).thenReturn(absolutePath);
-        when(file.lastModified()).thenReturn(1l);
+        mockFile(true,"content","absolutePath");
         
         when(import1.getLastModifiedIncludingImports()).thenReturn(0l);
         when(import2.getLastModifiedIncludingImports()).thenReturn(2l);
@@ -125,5 +113,15 @@ public class LessSourceTest {
         FieldUtils.writeField(lessSource, "imports", imports, true);
         
         assertEquals(2l, lessSource.getLastModifiedIncludingImports());
+    }
+
+    private File mockFile(boolean fileExists, String content, String absolutePath) throws IOException {
+        when(file.exists()).thenReturn(fileExists);
+        mockStatic(FileUtils.class);
+        when(FileUtils.readFileToString(file)).thenReturn(content);
+        when(file.getAbsolutePath()).thenReturn(absolutePath);
+        when(file.lastModified()).thenReturn(lastModified);
+        when(file.getParent()).thenReturn("folder");
+        return file;
     }
 }
