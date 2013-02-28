@@ -17,11 +17,44 @@ Look at the simple example below to compile LESS to CSS:
     // Instantiate the LESS compiler
     LessCompiler lessCompiler = new LessCompiler();
     
-    // Compile LESS input string to CSS output string
+    // Compile LESS input string to CSS output string.
+    // Note: When input is string it can not have imports to other less files
     String css = lessCompiler.compile("@color: #4D926F; #header { color: @color; }");
-    
-    // Or compile LESS input file to CSS output file
+
+    // Compile LESS input string to CSS output string by providing all imports
+    Map<String, LessSource> imports = new LinkedHashMap<String, LessSource>();
+	imports.put(
+			"import1.less",
+			new LessSource(FileUtils
+					.readFileToString(toFile("import/less/import1.less"))));
+	imports.put(
+			"import4.less",
+			new LessSource(FileUtils
+					.readFileToString(toFile("import/less/import4.less"))));
+
+	imports.put(
+			"import1/import1a.less",
+			new LessSource(
+					FileUtils
+							.readFileToString(toFile("import/less/import1/import1a.less"))));
+
+	imports.put(
+			"import1/import1b.less",
+			new LessSource(
+					FileUtils
+							.readFileToString(toFile("import/less/import1/import1b.less"))));
+
+	lessCompiler.compile(new LessSource(FileUtils
+			.readFileToString(toFile("import/less/import.less")), imports));
+				
+    // Compile LESS input file to CSS output file
     lessCompiler.compile(new File("main.less"), new File("main.css"));
+    
+    // Providing latest envjs and rhinojs and custom logjs
+    lessCompiler.setLogJs(new File("tools/log.js").toURI().toURL());
+	lessCompiler.setEnvJs(new File("tools/envjs.js").toURI().toURL());
+	lessCompiler.setLessJs(new File("tools/less.js").toURI().toURL());
+
 
 LessCompiler is thread safe. In other words, an application only needs one LessCompiler that it can reuse whenever necessary.
 
