@@ -16,6 +16,7 @@ package org.lesscss;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
@@ -34,10 +35,10 @@ import java.util.Collections;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.apache.commons.logging.Log;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.lesscss.logging.LessLogger;
 import org.mockito.Mock;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
@@ -59,7 +60,7 @@ public class LessCompilerTest {
     
     private LessCompiler lessCompiler;
     
-    @Mock private Log log;
+    @Mock private LessLogger logger;
     
     @Mock private Context cx;
     @Mock private Global global;
@@ -89,8 +90,8 @@ public class LessCompilerTest {
     public void setUp() throws Exception {
         lessCompiler = new LessCompiler();
         
-        when(log.isDebugEnabled()).thenReturn(false);
-        FieldUtils.writeField(lessCompiler, "log", log, true);
+        when(logger.isDebugEnabled()).thenReturn(false);
+        FieldUtils.writeField(lessCompiler, "logger", logger, true);
     }
     
     @Test
@@ -201,7 +202,7 @@ public class LessCompilerTest {
         
         verify(envJsFile).openConnection();
         
-        verify(log).error(anyString());
+        verify(logger).error(anyString(), (Throwable) anyObject());
     }
     
     @Test

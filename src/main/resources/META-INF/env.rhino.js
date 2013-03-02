@@ -1,6 +1,6 @@
-// Override the print function so that the messages go to commons logging
+// Override the print function so that the messages go to the configured loggerthe configured logger
 print = function(message) {
-    Packages.org.apache.commons.logging.LogFactory.getLog('rhino').debug(message);
+    logger.debug(message);
 };
 
 /*
