@@ -1,12 +1,9 @@
 Official LESS CSS Compiler for Java
 ===================================
 
-----------
+**Latest release**  1.3.3 - compatible with less 1.3.3
 
-> Important note: 
-> Due to changed interesst I'm no longer maintaining this project. Based on the frequent questions I get by e-mail and requests for updates (including pull requests) I think this project would serve it's goal to be continued. Therefore if you are interested to take over and bring this project to the next level contact me.
 
-----------
 
 LESS CSS Compiler for Java is a library to compile LESS sources to CSS stylesheets.
 
@@ -36,7 +33,7 @@ Maven users should add the library using the following dependency:
     <dependency>
       <groupId>org.lesscss</groupId>
       <artifactId>lesscss</artifactId>
-      <version>1.3.0</version>
+      <version>1.3.3</version>
     </dependency>
 
 (lesscss-java is in the Maven Central repository.)
@@ -91,6 +88,10 @@ Authors
 
 + candrews@integralblue.com
 + http://candrews.integralblue.com
+
+**Christophe Popov**
++ http://twitter.com/chpopov
++ http://uk.linkedin.com/in/hpopov/
 
 Copyright and License
 ---------------------
