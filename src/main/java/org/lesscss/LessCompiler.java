@@ -14,6 +14,12 @@
  */
 package org.lesscss;
 
+import org.apache.commons.io.FileUtils;
+import org.lesscss.logger.CommonsLogger;
+import org.lesscss.logger.Logger;
+import org.mozilla.javascript.*;
+import org.mozilla.javascript.tools.shell.Global;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -21,15 +27,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.Function;
-import org.mozilla.javascript.JavaScriptException;
-import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.ScriptableObject;
-import org.mozilla.javascript.tools.shell.Global;
 
 /**
  * The LESS compiler to compile LESS sources to CSS stylesheets.
@@ -59,9 +56,9 @@ import org.mozilla.javascript.tools.shell.Global;
 public class LessCompiler {
 
     private static final String COMPILE_STRING = "function doIt(input, compress) { var result; var parser = new less.Parser(); parser.parse(input, function(e, tree) { if (e instanceof Object) { throw e; } ; result = tree.toCSS({compress: compress}); }); return result; }";
-    
-    private static final Log log = LogFactory.getLog(LessCompiler.class);
-    
+
+    private Logger logger;
+
     private URL envJs = LessCompiler.class.getClassLoader().getResource("META-INF/env.rhino.js");
     private URL lessJs = LessCompiler.class.getClassLoader().getResource("META-INF/less.js");
     private List<URL> customJs = Collections.emptyList();
@@ -76,8 +73,13 @@ public class LessCompiler {
      * Constructs a new <code>LessCompiler</code>.
      */
     public LessCompiler() {
+        logger = new CommonsLogger(this.getClass());
     }
-    
+
+    public LessCompiler(Logger logger) {
+        this.logger = logger;
+    }
+
     /**
      * Returns the Envjs JavaScript file used by the compiler.
      * 
@@ -221,6 +223,7 @@ public class LessCompiler {
 	        global.init(cx); 
 	        
 	        scope = cx.initStandardObjects(global);
+            scope.put("logger", scope, Context.toObject(logger, scope));
 	        
 	        List<URL> jsUrls = new ArrayList<URL>(2 + customJs.size());
 	        jsUrls.add(envJs);
@@ -239,15 +242,13 @@ public class LessCompiler {
         }
         catch (Exception e) {
             String message = "Failed to initialize LESS compiler.";
-            log.error(message, e);
+            logger.error(message, e);
             throw new IllegalStateException(message, e);
         }finally{
         	Context.exit();
         }
-        
-        if (log.isDebugEnabled()) {
-            log.debug("Finished initialization of LESS compiler in " + (System.currentTimeMillis() - start) + " ms.");
-        }
+
+        logger.debug("Finished initialization of LESS compiler in " + (System.currentTimeMillis() - start) + " ms.");
     }
     
     /**
@@ -268,11 +269,10 @@ public class LessCompiler {
         try {
         	Context cx = Context.enter();
             Object result = doIt.call(cx, scope, null, new Object[]{input, compress});
-            
-            if (log.isDebugEnabled()) {
-                log.debug("Finished compilation of LESS source in " + (System.currentTimeMillis() - start) + " ms.");
-            }
-            
+
+
+            logger.debug("Finished compilation of LESS source in " + (System.currentTimeMillis() - start) + " ms.");
+
             return result.toString();
         }
         catch (Exception e) {
