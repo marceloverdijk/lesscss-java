@@ -14,26 +14,28 @@
  */
 package org.lesscss;
 
-import static org.junit.Assert.assertEquals;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.verifyStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import org.lesscss.LessSource;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.matchers.JUnitMatchers.containsString;
+import static org.powermock.api.mockito.PowerMockito.*;
 
 @PrepareForTest({FileUtils.class, LessSource.class})
 @RunWith(PowerMockRunner.class)
@@ -114,6 +116,26 @@ public class LessSourceTest {
         
         assertEquals(2l, lessSource.getLastModifiedIncludingImports());
     }
+
+    @Test
+    public void testUtf8EncodedLessFile() throws Exception {
+        String content = readLessSourceWithEncoding("UTF-8");
+        assertThat(content, containsString("↓"));
+    }
+
+    @Test
+    public void testWithBadEncodinfLessFile() throws Exception {
+        String content = readLessSourceWithEncoding("ISO-8859-1");
+        assertThat(content, not(containsString("↓")));
+    }
+
+    private String readLessSourceWithEncoding(String encoding) throws IOException, IllegalAccessException {
+        URL sourceUrl = getClass().getResource("/compatibility/utf8-content.less");
+        File sourceFile = new File(sourceUrl.getFile());
+        LessSource lessSource = new LessSource(sourceFile, Charset.forName(encoding));
+        return (String) FieldUtils.readField(lessSource, "content", true);
+    }
+
 
     private File mockFile(boolean fileExists, String content, String absolutePath) throws IOException {
         when(file.exists()).thenReturn(fileExists);

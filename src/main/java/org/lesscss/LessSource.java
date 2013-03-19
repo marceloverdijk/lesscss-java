@@ -14,15 +14,18 @@
  */
 package org.lesscss;
 
-import static java.util.regex.Pattern.MULTILINE;
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.io.FileUtils;
+
+import static java.util.regex.Pattern.MULTILINE;
 
 /**
  * Represents the metadata and content of a LESS source.
@@ -46,23 +49,41 @@ public class LessSource {
      * <p>
      * This will read the metadata and content of the LESS source, and will automatically resolve the imports. 
      * </p>
+     * <p>
+     * The file is read using the default Charset of the platform
+     * </p>
      * 
      * @param file The <code>File</code> reference to the LESS source to read.
      * @throws FileNotFoundException If the LESS source (or one of its imports) could not be found.
      * @throws IOException If the LESS source cannot be read.
      */
     public LessSource(File file) throws FileNotFoundException, IOException {
+        this(file, Charset.defaultCharset());
+    }
+
+    /**
+     * Constructs a new <code>LessSource</code>.
+     * <p>
+     * This will read the metadata and content of the LESS source, and will automatically resolve the imports.
+     * </p>
+     *
+     * @param file The <code>File</code> reference to the LESS source to read.
+     * @param charset charset used to read the less file.
+     * @throws FileNotFoundException If the LESS source (or one of its imports) could not be found.
+     * @throws IOException If the LESS source cannot be read.
+     */
+    public LessSource(File file, Charset charset) throws IOException {
         if (file == null) {
             throw new IllegalArgumentException("File must not be null.");
         }
-        if (!file.exists()) { 
+        if (!file.exists()) {
             throw new FileNotFoundException("File " + file.getAbsolutePath() + " not found.");
         }
         this.file = file;
-        this.content = this.normalizedContent = FileUtils.readFileToString(file);
+        this.content = this.normalizedContent = FileUtils.readFileToString(file, charset);
         resolveImports();
     }
-    
+
     /**
      * Returns the absolute pathname of the LESS source.
      * 
