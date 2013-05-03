@@ -43,6 +43,7 @@ public class LessSource {
     private String content;
     private String normalizedContent;
     private Map<String, LessSource> imports = new LinkedHashMap<String, LessSource>();
+    private Charset inputCharset;
     
     /**
      * Constructs a new <code>LessSource</code>.
@@ -76,10 +77,14 @@ public class LessSource {
         if (file == null) {
             throw new IllegalArgumentException("File must not be null.");
         }
+        if(charset == null) {
+            throw new IllegalArgumentException("Charset must not be null");
+        }
         if (!file.exists()) {
             throw new FileNotFoundException("File " + file.getAbsolutePath() + " not found.");
         }
         this.file = file;
+        this.inputCharset = charset;
         this.content = this.normalizedContent = FileUtils.readFileToString(file, charset);
         resolveImports();
     }
@@ -163,7 +168,7 @@ public class LessSource {
             importedFile = importedFile.matches(".*\\.(le?|c)ss$") ? importedFile : importedFile + ".less";
             boolean css = importedFile.matches(".*css$");
             if (!css) {
-                    LessSource importedLessSource = new LessSource(new File(file.getParentFile(), importedFile));
+                    LessSource importedLessSource = new LessSource(new File(file.getParentFile(), importedFile), inputCharset);
                     imports.put(importedFile, importedLessSource);
                     normalizedContent = normalizedContent.substring(0, importMatcher.start()) + importedLessSource.getNormalizedContent() + normalizedContent.substring(importMatcher.end());
                     importMatcher = IMPORT_PATTERN.matcher(normalizedContent);

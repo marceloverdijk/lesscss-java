@@ -21,6 +21,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
 import org.lesscss.logging.LessLogger;
 import org.lesscss.logging.LessLoggerFactory;
@@ -66,7 +68,8 @@ public class LessCompiler {
     private URL lessJs = LessCompiler.class.getClassLoader().getResource("META-INF/less.js");
     private List<URL> customJs = Collections.emptyList();
     private boolean compress = false;
-    private String encoding = null;
+    private String outputEncoding = null;
+    private String inputEncoding = null;
     
     private Function doIt;
     
@@ -113,7 +116,7 @@ public class LessCompiler {
      * Sets the LESS JavaScript file used by the compiler.
      * Must be set before {@link #init()} is called.
      * 
-     * @param The LESS JavaScript file used by the compiler.
+     * @param lessJs The LESS JavaScript file used by the compiler.
      */
     public synchronized void setLessJs(URL lessJs) {
         if (scope != null) {
@@ -181,12 +184,12 @@ public class LessCompiler {
     }
     
     /**
-     * Returns the character encoding used by the compiler when writing the output <code>File</code>.
+     * Returns the character outputEncoding used by the compiler when writing the output <code>File</code>.
      * 
-     * @return The character encoding used by the compiler when writing the output <code>File</code>.
+     * @return The character outputEncoding used by the compiler when writing the output <code>File</code>.
      */
-    public String getEncoding() {
-        return encoding;
+    public String getOutputEncoding() {
+        return outputEncoding;
     }
     
     /**
@@ -194,13 +197,36 @@ public class LessCompiler {
      * If not set the platform default will be used.
      * Must be set before {@link #init()} is called.
      * 
-     * @param The character encoding used by the compiler when writing the output <code>File</code>.
+     * @param outputEncoding The character encoding used by the compiler when writing the output <code>File</code>.
      */
-    public synchronized void setEncoding(String encoding) {
+    public synchronized void setOutputEncoding(String outputEncoding) {
         if (scope != null) {
             throw new IllegalStateException("This method can only be called before init()");
         }
-        this.encoding = encoding;
+        this.outputEncoding = outputEncoding;
+    }
+
+    /**
+     * Returns the character encoding used by the compiler when reading the input <code>File</code>.
+     *
+     * @return The character encoding used by the compiler when reading the input <code>File</code>.
+     */
+    public String getInputEncoding() {
+        return inputEncoding;
+    }
+
+    /**
+     * Sets the character encoding used by the compiler when reading the input <code>File</code>.
+     * If not set the platform default will be used.
+     * Must be set before {@link #init()} is called.
+     *
+     * @param inputEncoding The character encoding used by the compiler when reading the input <code>File</code>.
+     */
+    public synchronized void setInputEncoding(String inputEncoding) {
+        if (scope != null) {
+            throw new IllegalStateException("This method can only be called before init()");
+        }
+        this.inputEncoding = inputEncoding;
     }
     
     /**
@@ -298,7 +324,7 @@ public class LessCompiler {
      * @throws IOException If the LESS file cannot be read.
      */
     public String compile(File input) throws IOException, LessException {
-        LessSource lessSource = new LessSource(input);
+        LessSource lessSource = new LessSource(input, Charsets.toCharset(inputEncoding));
         return compile(lessSource);
     }
     
@@ -322,7 +348,7 @@ public class LessCompiler {
      * @throws IOException If the LESS file cannot be read or the output file cannot be written.
      */
     public void compile(File input, File output, boolean force) throws IOException, LessException {
-        LessSource lessSource = new LessSource(input);
+        LessSource lessSource = new LessSource(input, Charsets.toCharset(inputEncoding));
         compile(lessSource, output, force);
     }
     
@@ -358,7 +384,7 @@ public class LessCompiler {
     public void compile(LessSource input, File output, boolean force) throws IOException, LessException {
         if (force || !output.exists() || output.lastModified() < input.getLastModifiedIncludingImports()) {
             String data = compile(input);
-            FileUtils.writeStringToFile(output, data, encoding);
+            FileUtils.writeStringToFile(output, data, outputEncoding);
         }
     }
 }
