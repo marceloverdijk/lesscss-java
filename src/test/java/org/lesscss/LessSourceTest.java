@@ -14,6 +14,7 @@
  */
 package org.lesscss;
 
+import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.Before;
@@ -75,7 +76,7 @@ public class LessSourceTest {
         assertEquals(0, lessSource.getImports().size());
         
         verifyStatic();
-        FileUtils.readFileToString(file);
+        FileUtils.readFileToString(file, Charset.defaultCharset());
     }
     
     @Test(expected = IllegalArgumentException.class)
@@ -140,7 +141,7 @@ public class LessSourceTest {
     private File mockFile(boolean fileExists, String content, String absolutePath) throws IOException {
         when(file.exists()).thenReturn(fileExists);
         mockStatic(FileUtils.class);
-        when(FileUtils.readFileToString(file)).thenReturn(content);
+        when(FileUtils.readFileToString(file, Charset.defaultCharset())).thenReturn(content);
         when(file.getAbsolutePath()).thenReturn(absolutePath);
         when(file.lastModified()).thenReturn(lastModified);
         when(file.getParent()).thenReturn("folder");

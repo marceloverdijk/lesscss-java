@@ -33,6 +33,8 @@ import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.Before;
@@ -47,10 +49,6 @@ import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.tools.shell.Global;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-
-import org.lesscss.LessCompiler;
-import org.lesscss.LessException;
-import org.lesscss.LessSource;
 
 @PrepareForTest({Context.class, FileUtils.class, LessCompiler.class})
 @RunWith(PowerMockRunner.class)
@@ -275,14 +273,14 @@ public class LessCompilerTest {
         FieldUtils.writeField(lessCompiler, "scope", scope, true);
         FieldUtils.writeField(lessCompiler, "doIt", doIt, true);
         
-        whenNew(LessSource.class).withArguments(inputFile).thenReturn(lessSource);
+        whenNew(LessSource.class).withArguments(inputFile, Charsets.toCharset((String) null)).thenReturn(lessSource);
         when(lessSource.getNormalizedContent()).thenReturn(less);
         
         when(doIt.call(cx, scope, null, new Object[]{less, false})).thenReturn(css);
         
         assertEquals(css, lessCompiler.compile(inputFile));
         
-        verifyNew(LessSource.class).withArguments(inputFile);
+        verifyNew(LessSource.class).withArguments(inputFile, Charsets.toCharset((String)null));
         verify(lessSource).getNormalizedContent();
 
         verify(doIt).call(cx, scope, null, new Object[]{less, false});
@@ -294,8 +292,8 @@ public class LessCompilerTest {
         when(Context.enter()).thenReturn(cx);
         FieldUtils.writeField(lessCompiler, "scope", scope, true);
         FieldUtils.writeField(lessCompiler, "doIt", doIt, true);
-        
-        whenNew(LessSource.class).withArguments(inputFile).thenReturn(lessSource);
+
+        whenNew(LessSource.class).withArguments(inputFile, Charsets.toCharset((String)null)).thenReturn(lessSource);
         when(lessSource.getNormalizedContent()).thenReturn(less);
         
         when(doIt.call(cx, scope, null, new Object[]{less, false})).thenReturn(css);
@@ -303,8 +301,8 @@ public class LessCompilerTest {
         mockStatic(FileUtils.class);
         
         lessCompiler.compile(inputFile, outputFile);
-        
-        verifyNew(LessSource.class).withArguments(inputFile);
+
+        verifyNew(LessSource.class).withArguments(inputFile, Charsets.toCharset((String)null));
         verify(lessSource).getNormalizedContent();
         
         verify(doIt).call(cx, scope, null, new Object[]{less, false});
@@ -319,8 +317,8 @@ public class LessCompilerTest {
         when(Context.enter()).thenReturn(cx);
         FieldUtils.writeField(lessCompiler, "scope", scope, true);
         FieldUtils.writeField(lessCompiler, "doIt", doIt, true);
-        
-        whenNew(LessSource.class).withArguments(inputFile).thenReturn(lessSource);
+
+        whenNew(LessSource.class).withArguments(inputFile, Charsets.toCharset((String)null)).thenReturn(lessSource);
         when(lessSource.getNormalizedContent()).thenReturn(less);
         
         when(doIt.call(cx, scope, null, new Object[]{less, false})).thenReturn(css);
@@ -328,8 +326,8 @@ public class LessCompilerTest {
         mockStatic(FileUtils.class);
         
         lessCompiler.compile(inputFile, outputFile, true);
-        
-        verifyNew(LessSource.class).withArguments(inputFile);
+
+        verifyNew(LessSource.class).withArguments(inputFile, Charsets.toCharset((String)null));
         verify(lessSource).getNormalizedContent();
         
         verify(doIt).call(cx, scope, null, new Object[]{less, false});
@@ -346,8 +344,8 @@ public class LessCompilerTest {
         FieldUtils.writeField(lessCompiler, "doIt", doIt, true);
         
         when(outputFile.exists()).thenReturn(false);
-        
-        whenNew(LessSource.class).withArguments(inputFile).thenReturn(lessSource);
+
+        whenNew(LessSource.class).withArguments(inputFile, Charsets.toCharset((String)null)).thenReturn(lessSource);
         when(lessSource.getNormalizedContent()).thenReturn(less);
         
         when(doIt.call(cx, scope, null, new Object[]{less, false})).thenReturn(css);
@@ -355,8 +353,8 @@ public class LessCompilerTest {
         mockStatic(FileUtils.class);
         
         lessCompiler.compile(inputFile, outputFile, false);
-        
-        verifyNew(LessSource.class).withArguments(inputFile);
+
+        verifyNew(LessSource.class).withArguments(inputFile, Charsets.toCharset((String)null));
         
         verify(outputFile).exists();
         
@@ -374,8 +372,8 @@ public class LessCompilerTest {
         when(Context.enter()).thenReturn(cx);
         FieldUtils.writeField(lessCompiler, "scope", scope, true);
         FieldUtils.writeField(lessCompiler, "doIt", doIt, true);
-        
-        whenNew(LessSource.class).withArguments(inputFile).thenReturn(lessSource);
+
+        whenNew(LessSource.class).withArguments(inputFile, Charsets.toCharset((String)null)).thenReturn(lessSource);
         
         when(outputFile.exists()).thenReturn(true);
         when(outputFile.lastModified()).thenReturn(1l);
@@ -388,8 +386,8 @@ public class LessCompilerTest {
         mockStatic(FileUtils.class);
         
         lessCompiler.compile(inputFile, outputFile, false);
-        
-        verifyNew(LessSource.class).withArguments(inputFile);
+
+        verifyNew(LessSource.class).withArguments(inputFile, Charsets.toCharset((String)null));
         
         verify(outputFile).exists();
         verify(outputFile).lastModified();
@@ -409,8 +407,8 @@ public class LessCompilerTest {
         when(Context.enter()).thenReturn(cx);
         FieldUtils.writeField(lessCompiler, "scope", scope, true);
         FieldUtils.writeField(lessCompiler, "doIt", doIt, true);
-        
-        whenNew(LessSource.class).withArguments(inputFile).thenReturn(lessSource);
+
+        whenNew(LessSource.class).withArguments(inputFile, Charsets.toCharset((String)null)).thenReturn(lessSource);
         
         when(outputFile.exists()).thenReturn(true);
         when(outputFile.lastModified()).thenReturn(2l);
@@ -418,8 +416,8 @@ public class LessCompilerTest {
         when(lessSource.getLastModifiedIncludingImports()).thenReturn(1l);
         
         lessCompiler.compile(inputFile, outputFile, false);
-        
-        verifyNew(LessSource.class).withArguments(inputFile);
+
+        verifyNew(LessSource.class).withArguments(inputFile, Charsets.toCharset((String)null));
         
         verify(outputFile).exists();
         verify(outputFile).lastModified();
@@ -601,11 +599,11 @@ public class LessCompilerTest {
     public void testEncoding() throws Exception {
         mockStatic(Context.class);
         when(Context.enter()).thenReturn(cx);
-        lessCompiler.setEncoding("utf-8");
+        lessCompiler.setOutputEncoding("utf-8");
         FieldUtils.writeField(lessCompiler, "scope", scope, true);
         FieldUtils.writeField(lessCompiler, "doIt", doIt, true);
         
-        whenNew(LessSource.class).withArguments(inputFile).thenReturn(lessSource);
+        whenNew(LessSource.class).withArguments(inputFile, Charsets.toCharset(lessCompiler.getInputEncoding())).thenReturn(lessSource);
         when(lessSource.getNormalizedContent()).thenReturn(less);
         
         when(doIt.call(cx, scope, null, new Object[]{less, false})).thenReturn(css);
@@ -614,7 +612,7 @@ public class LessCompilerTest {
         
         lessCompiler.compile(inputFile, outputFile);
         
-        verifyNew(LessSource.class).withArguments(inputFile);
+        verifyNew(LessSource.class).withArguments(inputFile, Charsets.toCharset(lessCompiler.getInputEncoding()));
         verify(lessSource).getNormalizedContent();
         
         verify(doIt).call(cx, scope, null, new Object[]{less, false});
