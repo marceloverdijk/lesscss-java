@@ -1,5 +1,6 @@
 package org.lesscss;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -12,5 +13,7 @@ public interface LessResolver {
   long getLastModified(String filename);
 
   LessResolver resolveImport(String parent);
+
+  File file(String path);
   
 }

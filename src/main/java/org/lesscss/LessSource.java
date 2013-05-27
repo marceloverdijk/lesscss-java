@@ -80,9 +80,6 @@ public class LessSource {
         if (!file.exists()) {
             throw new FileNotFoundException("File " + file.getAbsolutePath() + " not found.");
         }
-        this.file = file;
-        this.content = this.normalizedContent = FileUtils.readFileToString(file, charset);
-        resolveImports();
         init(file.getAbsolutePath(), new LessFileResolver(file));
     }
 
@@ -102,7 +99,7 @@ public class LessSource {
 
     public void init(String filename, LessResolver resolver) throws FileNotFoundException, IOException {
         this.resolver = resolver;
-        this.filename = filename;
+        this.file = new File(filename);
         this.content = this.normalizedContent = resolver.resolve(filename);
         resolveImports();
     }
@@ -113,7 +110,7 @@ public class LessSource {
      * @return The absolute pathname of the LESS source.
      */
     public String getAbsolutePath() {
-        return filename;
+        return file.getAbsolutePath();
     }
     
     /**
@@ -145,7 +142,7 @@ public class LessSource {
      * @return A <code>long</code> value representing the time the file was last modified, measured in milliseconds since the epoch (00:00:00 GMT, January 1, 1970).
      */
     public long getLastModified() {
-      return resolver.getLastModified(filename);
+      return resolver.getLastModified(file.getAbsolutePath());
     }
 
     /**
@@ -186,11 +183,12 @@ public class LessSource {
             importedFile = importedFile.matches(".*\\.(le?|c)ss$") ? importedFile : importedFile + ".less";
             boolean css = importedFile.matches(".*css$");
             if (!css) {
-                LessSource importedLessSource = new LessSource(importedFile, resolver.resolveImport(filename));
+                LessSource importedLessSource = new LessSource(importedFile, resolver.resolveImport(resolver.file(file.getPath().toString()).getAbsolutePath()));
                 imports.put(importedFile, importedLessSource);
                 normalizedContent = normalizedContent.substring(0, importMatcher.start()) + importedLessSource.getNormalizedContent() + normalizedContent.substring(importMatcher.end());
                 importMatcher = IMPORT_PATTERN.matcher(normalizedContent);
             }
         }
     }
+
 }

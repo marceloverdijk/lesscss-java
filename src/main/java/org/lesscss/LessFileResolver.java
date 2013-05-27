@@ -47,13 +47,13 @@ public class LessFileResolver implements LessResolver {
      * @param path
      * @return
      */
-    private File file(String path) {
+    public File file(String path) {
         File pathFile = new File(path);
         if (pathFile.isAbsolute()) {
             return pathFile;
         } else if (file.getParentFile() != null) {
-            File result = new File(file.getParentFile(), path);
-            if (searchPathes != null && !result.exists()) {
+            File result = null;
+            if (searchPathes != null) {
                 for (File searchPath : searchPathes) {
                     File check = new File(searchPath, path);
                     if (check.exists()) {
@@ -61,6 +61,9 @@ public class LessFileResolver implements LessResolver {
                         break;
                     }
                 }
+            }
+            if (result == null || !result.exists()) {
+                result = new File(file.getParentFile(), path);
             }
             return result;
         } else if (file.getAbsolutePath().equals(path)) {
