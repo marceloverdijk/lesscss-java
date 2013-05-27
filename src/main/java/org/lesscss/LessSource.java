@@ -14,15 +14,18 @@
  */
 package org.lesscss;
 
-import static java.util.regex.Pattern.MULTILINE;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static java.util.regex.Pattern.MULTILINE;
 
 /**
  * Represents the metadata and content of a LESS source.
@@ -34,9 +37,9 @@ public class LessSource {
     /**
      * The <code>Pattern</code> used to match imported files.
      */
-    private static final Pattern IMPORT_PATTERN = Pattern.compile("^(?!\\s*//\\s*)@import\\s+(url\\()?\\s*\"(.+)\\s*\"(\\))?\\s*;.*$", MULTILINE);
-    
-    private String filename;
+    private static final Pattern IMPORT_PATTERN = Pattern.compile("^(?!\\s*//\\s*)@import\\s+(url\\()?\\s*(\"|')(.+)\\s*(\"|')(\\))?\\s*;.*$", MULTILINE);
+
+    private File file;
     private String content;
     private String normalizedContent;
     private Map<String, LessSource> imports = new LinkedHashMap<String, LessSource>();
@@ -47,40 +50,61 @@ public class LessSource {
      * <p>
      * This will read the metadata and content of the LESS source, and will automatically resolve the imports. 
      * </p>
+     * <p>
+     * The file is read using the default Charset of the platform
+     * </p>
      * 
      * @param file The <code>File</code> reference to the LESS source to read.
      * @throws FileNotFoundException If the LESS source (or one of its imports) could not be found.
      * @throws IOException If the LESS source cannot be read.
      */
     public LessSource(File file) throws FileNotFoundException, IOException {
+        this(file, Charset.defaultCharset());
+    }
+
+    /**
+     * Constructs a new <code>LessSource</code>.
+     * <p>
+     * This will read the metadata and content of the LESS source, and will automatically resolve the imports.
+     * </p>
+     *
+     * @param file The <code>File</code> reference to the LESS source to read.
+     * @param charset charset used to read the less file.
+     * @throws FileNotFoundException If the LESS source (or one of its imports) could not be found.
+     * @throws IOException If the LESS source cannot be read.
+     */
+    public LessSource(File file, Charset charset) throws IOException {
         if (file == null) {
             throw new IllegalArgumentException("File must not be null.");
         }
-        if (!file.exists()) { 
+        if (!file.exists()) {
             throw new FileNotFoundException("File " + file.getAbsolutePath() + " not found.");
         }
+        this.file = file;
+        this.content = this.normalizedContent = FileUtils.readFileToString(file, charset);
+        resolveImports();
         init(file.getAbsolutePath(), new LessFileResolver(file));
     }
-    
+
     public LessSource(String filename) throws FileNotFoundException, IOException {
-      if (filename == null) {
-        throw new IllegalArgumentException("Filename not be null.");
-      }
-      init(filename, new LessFileResolver());
+        if (filename == null) {
+            throw new IllegalArgumentException("Filename not be null.");
+        }
+        init(filename, new LessFileResolver());
     }
-    
+
     public LessSource(String filename, LessResolver resolver) throws FileNotFoundException, IOException {
-      if (filename == null) {
-        throw new IllegalArgumentException("Filename not be null.");
-      }
-      init(filename, resolver);
+        if (filename == null) {
+            throw new IllegalArgumentException("Filename not be null.");
+        }
+        init(filename, resolver);
     }
-    
+
     public void init(String filename, LessResolver resolver) throws FileNotFoundException, IOException {
-      this.resolver = resolver;
-      this.filename = filename;
-      this.content = this.normalizedContent = resolver.resolve(filename);
-      resolveImports();
+        this.resolver = resolver;
+        this.filename = filename;
+        this.content = this.normalizedContent = resolver.resolve(filename);
+        resolveImports();
     }
     
     /**
@@ -123,7 +147,7 @@ public class LessSource {
     public long getLastModified() {
       return resolver.getLastModified(filename);
     }
-    
+
     /**
      * Returns the time that the LESS source, or one of its imports, was last modified.
      * 
@@ -155,14 +179,10 @@ public class LessSource {
         return imports;
     }
 
-    /**
-     * Called when initializing this source, generates a list of imported files.
-     * @throws IOException
-     */
-    private void resolveImports() throws IOException {
+    private void resolveImports() throws FileNotFoundException, IOException {
         Matcher importMatcher = IMPORT_PATTERN.matcher(normalizedContent);
         while (importMatcher.find()) {
-            String importedFile = importMatcher.group(2);
+            String importedFile = importMatcher.group(3);
             importedFile = importedFile.matches(".*\\.(le?|c)ss$") ? importedFile : importedFile + ".less";
             boolean css = importedFile.matches(".*css$");
             if (!css) {

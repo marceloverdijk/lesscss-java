@@ -46,4 +46,9 @@ public class ImportIT extends AbstractCompileIT {
         String actual = lessCompiler1.compile(toFile("import/fallback/fallbacktest.less"), imports);
         assertEquals(expected.replace("\r\n", "\n"), actual);
     }
+
+    @Test
+    public void testImportSingleQuotes() throws Exception {
+        testCompile(toFile("import/less/import_quotes.less"), toFile("import/css/import.css"));
+    }
 }

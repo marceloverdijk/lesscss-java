@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.lesscss.logging.LessLogger;
+import org.lesscss.logging.LessLoggerFactory;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.JavaScriptException;
@@ -59,9 +59,9 @@ import org.mozilla.javascript.tools.shell.Global;
 public class LessCompiler {
 
     private static final String COMPILE_STRING = "function doIt(input, compress) { var result; var parser = new less.Parser(); parser.parse(input, function(e, tree) { if (e instanceof Object) { throw e; } ; result = tree.toCSS({compress: compress}); }); return result; }";
-    
-    private static final Log log = LogFactory.getLog(LessCompiler.class);
-    
+
+    private static final LessLogger logger = LessLoggerFactory.getLogger(LessCompiler.class);
+
     private URL envJs = LessCompiler.class.getClassLoader().getResource("META-INF/env.rhino.js");
     private URL lessJs = LessCompiler.class.getClassLoader().getResource("META-INF/less.js");
     private List<URL> customJs = Collections.emptyList();
@@ -221,6 +221,7 @@ public class LessCompiler {
 	        global.init(cx); 
 	        
 	        scope = cx.initStandardObjects(global);
+            scope.put("logger", scope, Context.toObject(logger, scope));
 	        
 	        List<URL> jsUrls = new ArrayList<URL>(2 + customJs.size());
 	        jsUrls.add(envJs);
@@ -239,14 +240,14 @@ public class LessCompiler {
         }
         catch (Exception e) {
             String message = "Failed to initialize LESS compiler.";
-            log.error(message, e);
+            logger.error(message, e);
             throw new IllegalStateException(message, e);
         }finally{
         	Context.exit();
         }
         
-        if (log.isDebugEnabled()) {
-            log.debug("Finished initialization of LESS compiler in " + (System.currentTimeMillis() - start) + " ms.");
+        if (logger.isDebugEnabled()) {
+            logger.debug("Finished initialization of LESS compiler in " + (System.currentTimeMillis() - start) + " ms.");
         }
     }
     
@@ -269,8 +270,8 @@ public class LessCompiler {
         	Context cx = Context.enter();
             Object result = doIt.call(cx, scope, null, new Object[]{input, compress});
             
-            if (log.isDebugEnabled()) {
-                log.debug("Finished compilation of LESS source in " + (System.currentTimeMillis() - start) + " ms.");
+            if (logger.isDebugEnabled()) {
+                logger.debug("Finished compilation of LESS source in " + (System.currentTimeMillis() - start) + " ms.");
             }
             
             return result.toString();

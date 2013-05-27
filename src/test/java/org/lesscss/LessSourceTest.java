@@ -18,12 +18,10 @@ import static org.junit.Assert.assertEquals;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.Before;
@@ -33,6 +31,8 @@ import org.mockito.Mock;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import org.lesscss.LessSource;
+
 @PrepareForTest({FileUtils.class, LessSource.class})
 @RunWith(PowerMockRunner.class)
 public class LessSourceTest {
@@ -40,15 +40,13 @@ public class LessSourceTest {
     private LessSource lessSource;
     
     @Mock private File file;
-    
+
     @Mock private LessSource import1;
     @Mock private LessSource import2;
     @Mock private LessSource import3;
     
     private Map<String, LessSource> imports;
-    
-    private String content = "content";
-    private String absolutePath = "path";
+
     private long lastModified = 1l;
         
     @Before
@@ -61,17 +59,13 @@ public class LessSourceTest {
     
     @Test
     public void testNewLessSourceWithoutImports() throws Exception {
-        when(file.exists()).thenReturn(true);
-        mockStatic(FileUtils.class);
-        when(FileUtils.readFileToString(file)).thenReturn(content);
-        when(file.getAbsolutePath()).thenReturn(absolutePath);
-        when(file.lastModified()).thenReturn(lastModified);
+        mockFile(true,"content","absolutePath");
         
         lessSource = new LessSource(file);
         
-        assertEquals(absolutePath, lessSource.getAbsolutePath());
-        assertEquals(content, lessSource.getContent());
-        assertEquals(content, lessSource.getNormalizedContent());
+        assertEquals("absolutePath", lessSource.getAbsolutePath());
+        assertEquals("content", lessSource.getContent());
+        assertEquals("content", lessSource.getNormalizedContent());
         assertEquals(lastModified, lessSource.getLastModified());
         assertEquals(lastModified, lessSource.getLastModifiedIncludingImports());
         assertEquals(0, lessSource.getImports().size());
@@ -93,11 +87,7 @@ public class LessSourceTest {
     
     @Test
     public void testLastModifiedIncludingImportsWhenNoImportModifiedLater() throws Exception {
-        when(file.exists()).thenReturn(true);
-        mockStatic(FileUtils.class);
-        when(FileUtils.readFileToString(file)).thenReturn(content);
-        when(file.getAbsolutePath()).thenReturn(absolutePath);
-        when(file.lastModified()).thenReturn(1l);
+        mockFile(true,"content","absolutePath");
         
         when(import1.getLastModifiedIncludingImports()).thenReturn(0l);
         when(import2.getLastModifiedIncludingImports()).thenReturn(0l);
@@ -111,11 +101,7 @@ public class LessSourceTest {
     
     @Test
     public void testLastModifiedIncludingImportsWhenImportModifiedLater() throws Exception {
-        when(file.exists()).thenReturn(true);
-        mockStatic(FileUtils.class);
-        when(FileUtils.readFileToString(file)).thenReturn(content);
-        when(file.getAbsolutePath()).thenReturn(absolutePath);
-        when(file.lastModified()).thenReturn(1l);
+        mockFile(true,"content","absolutePath");
         
         when(import1.getLastModifiedIncludingImports()).thenReturn(0l);
         when(import2.getLastModifiedIncludingImports()).thenReturn(2l);
@@ -125,5 +111,35 @@ public class LessSourceTest {
         FieldUtils.writeField(lessSource, "imports", imports, true);
         
         assertEquals(2l, lessSource.getLastModifiedIncludingImports());
+    }
+
+    @Test
+    public void testUtf8EncodedLessFile() throws Exception {
+        String content = readLessSourceWithEncoding("UTF-8");
+        assertThat(content, containsString("↓"));
+    }
+
+    @Test
+    public void testWithBadEncodinfLessFile() throws Exception {
+        String content = readLessSourceWithEncoding("ISO-8859-1");
+        assertThat(content, not(containsString("↓")));
+    }
+
+    private String readLessSourceWithEncoding(String encoding) throws IOException, IllegalAccessException {
+        URL sourceUrl = getClass().getResource("/compatibility/utf8-content.less");
+        File sourceFile = new File(sourceUrl.getFile());
+        LessSource lessSource = new LessSource(sourceFile, Charset.forName(encoding));
+        return (String) FieldUtils.readField(lessSource, "content", true);
+    }
+
+
+    private File mockFile(boolean fileExists, String content, String absolutePath) throws IOException {
+        when(file.exists()).thenReturn(fileExists);
+        mockStatic(FileUtils.class);
+        when(FileUtils.readFileToString(file)).thenReturn(content);
+        when(file.getAbsolutePath()).thenReturn(absolutePath);
+        when(file.lastModified()).thenReturn(lastModified);
+        when(file.getParent()).thenReturn("folder");
+        return file;
     }
 }

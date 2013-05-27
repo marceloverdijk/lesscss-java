@@ -1,6 +1,10 @@
 Official LESS CSS Compiler for Java
 ===================================
 
+**Latest release**  1.3.3 - compatible with less 1.3.3
+
+
+
 LESS CSS Compiler for Java is a library to compile LESS sources to CSS stylesheets.
 
 The compiler uses Rhino, Envjs (simulated browser environment written in JavaScript), and the official LESS JavaScript compiler.
@@ -32,7 +36,7 @@ Maven users should add the library using the following dependency:
     <dependency>
       <groupId>org.lesscss</groupId>
       <artifactId>lesscss</artifactId>
-      <version>1.3.0</version>
+      <version>1.3.3</version>
     </dependency>
 
 (lesscss-java is in the Maven Central repository.)
@@ -41,9 +45,9 @@ Non-Maven users should download the latest version and add it to the project's c
 
 + <a href="http://commons.apache.org/io/">Apache Commons IO 2.4</a>
 + <a href="http://commons.apache.org/lang/">Apache Commons Lang 3.1</a>
-+ <a href="http://commons.apache.org/logging/">Apache Commons Logging 1.1.1</a>
 + <a href="http://www.mozilla.org/rhino/">Rhino: JavaScript for Java 1.7R4</a>
 
+If [SLF4J](http://www.slf4j.org/) is present in the classpath, it will be used for logging.
 
 Compatibility
 -------------
@@ -87,6 +91,10 @@ Authors
 
 + candrews@integralblue.com
 + http://candrews.integralblue.com
+
+**Christophe Popov**
++ http://twitter.com/chpopov
++ http://uk.linkedin.com/in/hpopov/
 
 Copyright and License
 ---------------------
