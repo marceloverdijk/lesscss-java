@@ -21,6 +21,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.io.FileUtils;
 import org.lesscss.logging.LessLogger;
 import org.lesscss.logging.LessLoggerFactory;
@@ -281,7 +284,33 @@ public class LessCompiler {
                 Scriptable value = (Scriptable)((JavaScriptException)e).getValue();
                 if (value != null && ScriptableObject.hasProperty(value, "message")) {
                     String message = ScriptableObject.getProperty(value, "message").toString();
-                    throw new LessException(message, e);
+                    StringBuilder trace = new StringBuilder();
+
+                    // find line of error in given message.
+                    Pattern p = Pattern.compile(".*[Ll]ine[ ]+([0-9]+).*");
+                    Matcher m = p.matcher(message);
+                    if (m.find()) {
+                        int line = Integer.parseInt(m.group(1));
+                        String[] lines = input.split("\n");
+                        for(int i = 0; i < lines.length; i++) {
+                            if (i < line + 7 && i > line - 7) {
+                                if (i == line) {
+                                    trace.append("LOOK HERE -> ");
+                                }
+                                trace.append(lines[i]);
+                                trace.append("\n");
+                            }
+                        }
+                    }
+                    if (trace.length() > 0) {
+                        trace.insert(0, "\n === The Problematic Instruction: ===\n");
+                        trace.insert(0, message);
+                        trace.append("\n");
+
+                        throw new LessException(trace.toString(), e);
+                    } else {
+                        throw new LessException(message, e);
+                    }
                 }
             }
             throw new LessException(e);
