@@ -21,6 +21,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.io.FileUtils;
 import org.lesscss.logging.LessLogger;
 import org.lesscss.logging.LessLoggerFactory;
@@ -113,7 +116,7 @@ public class LessCompiler {
      * Sets the LESS JavaScript file used by the compiler.
      * Must be set before {@link #init()} is called.
      * 
-     * @param The LESS JavaScript file used by the compiler.
+     * @param lessJs The LESS JavaScript file used by the compiler.
      */
     public synchronized void setLessJs(URL lessJs) {
         if (scope != null) {
@@ -194,7 +197,7 @@ public class LessCompiler {
      * If not set the platform default will be used.
      * Must be set before {@link #init()} is called.
      * 
-     * @param The character encoding used by the compiler when writing the output <code>File</code>.
+     * @param encoding The character encoding used by the compiler when writing the output <code>File</code>.
      */
     public synchronized void setEncoding(String encoding) {
         if (scope != null) {
@@ -281,7 +284,32 @@ public class LessCompiler {
                 Scriptable value = (Scriptable)((JavaScriptException)e).getValue();
                 if (value != null && ScriptableObject.hasProperty(value, "message")) {
                     String message = ScriptableObject.getProperty(value, "message").toString();
-                    throw new LessException(message, e);
+                    Object lineObj = ScriptableObject.getProperty(value, "line");
+                    int line = (lineObj == null ? -1 : new Double(lineObj.toString()).intValue());
+
+                    StringBuilder trace = new StringBuilder();
+
+                    if (line >= 0) {
+                        String[] lines = input.split("\n");
+                        for(int i = 0; i < lines.length; i++) {
+                            if (i < line + 7 && i > line - 7) {
+                                if (i == line) {
+                                    trace.append("LOOK HERE -> ");
+                                }
+                                trace.append(lines[i]);
+                                trace.append("\n");
+                            }
+                        }
+                    }
+                    if (trace.length() > 0) {
+                        trace.insert(0, "\n === The Problematic Instruction: ===\n");
+                        trace.insert(0, message);
+                        trace.append("\n");
+
+                        throw new LessException(trace.toString(), e);
+                    } else {
+                        throw new LessException(message, e);
+                    }
                 }
             }
             throw new LessException(e);
@@ -361,4 +389,41 @@ public class LessCompiler {
             FileUtils.writeStringToFile(output, data, encoding);
         }
     }
+
+    /**
+     * Compiles the input <code>File</code> to CSS and returns the css source.
+     * @param input The input less file to compile.
+     * @param searchPath The searchPath for imports to use. The first one that finds a resource wins.
+     * @return
+     * @throws IOException
+     * @throws LessException
+     */
+    public String compile(File input, List<File> searchPath) throws IOException, LessException {
+        LessResolver resolver = new LessFileResolver(input, searchPath);
+        LessSource source = new LessSource(input.getAbsolutePath(), resolver);
+        return compile(source);
+    }
+
+    /**
+     * Compiles the input <code>File</code> to CSS and writes the result to a File.
+     * @param input The input less file to compile.
+     * @param output The output <code>File</code> to write the CSS to.
+     * @param force 'false' to only compile the input <code>LessSource</code> in case the LESS source has been modified (including imports) or the output file does not exists.
+     * @param searchPath The searchPath for imports to use. The first one that finds a resource wins.
+     * @return
+     * @throws IOException
+     * @throws LessException
+     */
+    public void compile(File input, File output, boolean force, List<File> searchPath) throws IOException, LessException {
+        if (force || !output.exists()) {
+            LessResolver resolver = new LessFileResolver(input, searchPath);
+            LessSource source = new LessSource(input.getAbsolutePath(), resolver);
+            if (output.lastModified() < source.getLastModifiedIncludingImports()) {
+                String data = compile(source);
+                FileUtils.writeStringToFile(output, data, encoding);
+            }
+        }
+    }
+
+
 }

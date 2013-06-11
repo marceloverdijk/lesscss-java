@@ -43,6 +43,7 @@ public class LessSource {
     private String content;
     private String normalizedContent;
     private Map<String, LessSource> imports = new LinkedHashMap<String, LessSource>();
+    private LessResolver resolver;
     
     /**
      * Constructs a new <code>LessSource</code>.
@@ -79,11 +80,30 @@ public class LessSource {
         if (!file.exists()) {
             throw new FileNotFoundException("File " + file.getAbsolutePath() + " not found.");
         }
-        this.file = file;
-        this.content = this.normalizedContent = FileUtils.readFileToString(file, charset);
-        resolveImports();
+        init(file.getAbsolutePath(), new LessFileResolver(file));
     }
 
+    public LessSource(String filename) throws FileNotFoundException, IOException {
+        if (filename == null) {
+            throw new IllegalArgumentException("Filename not be null.");
+        }
+        init(filename, new LessFileResolver());
+    }
+
+    public LessSource(String filename, LessResolver resolver) throws FileNotFoundException, IOException {
+        if (filename == null) {
+            throw new IllegalArgumentException("Filename not be null.");
+        }
+        init(filename, resolver);
+    }
+
+    public void init(String filename, LessResolver resolver) throws FileNotFoundException, IOException {
+        this.resolver = resolver;
+        this.file = new File(filename);
+        this.content = this.normalizedContent = resolver.resolve(filename);
+        resolveImports();
+    }
+    
     /**
      * Returns the absolute pathname of the LESS source.
      * 
@@ -122,7 +142,7 @@ public class LessSource {
      * @return A <code>long</code> value representing the time the file was last modified, measured in milliseconds since the epoch (00:00:00 GMT, January 1, 1970).
      */
     public long getLastModified() {
-        return file.lastModified();
+      return resolver.getLastModified(file.getAbsolutePath());
     }
 
     /**
@@ -163,11 +183,12 @@ public class LessSource {
             importedFile = importedFile.matches(".*\\.(le?|c)ss$") ? importedFile : importedFile + ".less";
             boolean css = importedFile.matches(".*css$");
             if (!css) {
-                    LessSource importedLessSource = new LessSource(new File(file.getParentFile(), importedFile));
-                    imports.put(importedFile, importedLessSource);
-                    normalizedContent = normalizedContent.substring(0, importMatcher.start()) + importedLessSource.getNormalizedContent() + normalizedContent.substring(importMatcher.end());
-                    importMatcher = IMPORT_PATTERN.matcher(normalizedContent);
+                LessSource importedLessSource = new LessSource(importedFile, resolver.resolveImport(resolver.file(file.getPath().toString()).getAbsolutePath()));
+                imports.put(importedFile, importedLessSource);
+                normalizedContent = normalizedContent.substring(0, importMatcher.start()) + importedLessSource.getNormalizedContent() + normalizedContent.substring(importMatcher.end());
+                importMatcher = IMPORT_PATTERN.matcher(normalizedContent);
             }
         }
     }
+
 }

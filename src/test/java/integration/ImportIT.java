@@ -14,7 +14,15 @@
  */
 package integration;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Test;
+import org.lesscss.LessCompiler;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 public class ImportIT extends AbstractCompileIT {
 
@@ -26,6 +34,17 @@ public class ImportIT extends AbstractCompileIT {
     @Test
     public void testImportEndsInLess() throws Exception {
         testCompile(toFile("import/endsinless/less/import.less"), toFile("import/endsinless/css/import.css"));
+    }
+
+    @Test
+    public void testImportFallbacks() throws Exception {
+        String expected = FileUtils.readFileToString(toFile("import/fallback/css/fallbacktest.css"));
+        LessCompiler lessCompiler1 = new LessCompiler();
+        List<File> imports = new ArrayList<File>();
+        imports.add(toFile("import/fallback/override"));
+        imports.add(toFile("import/fallback/base"));
+        String actual = lessCompiler1.compile(toFile("import/fallback/fallbacktest.less"), imports);
+        assertEquals(expected.replace("\r\n", "\n"), actual);
     }
 
     @Test
