@@ -284,13 +284,12 @@ public class LessCompiler {
                 Scriptable value = (Scriptable)((JavaScriptException)e).getValue();
                 if (value != null && ScriptableObject.hasProperty(value, "message")) {
                     String message = ScriptableObject.getProperty(value, "message").toString();
+                    Object lineObj = ScriptableObject.getProperty(value, "line");
+                    int line = (lineObj == null ? -1 : new Double(lineObj.toString()).intValue());
+
                     StringBuilder trace = new StringBuilder();
 
-                    // find line of error in given message.
-                    Pattern p = Pattern.compile(".*[Ll]ine[ ]+([0-9]+).*");
-                    Matcher m = p.matcher(message);
-                    if (m.find()) {
-                        int line = Integer.parseInt(m.group(1));
+                    if (line >= 0) {
                         String[] lines = input.split("\n");
                         for(int i = 0; i < lines.length; i++) {
                             if (i < line + 7 && i > line - 7) {
