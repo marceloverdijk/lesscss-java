@@ -7,3 +7,8 @@ import1b {
 import4 {
   color: blue;
 }
+@media screen {
+  import4 {
+    color: blue;
+  }
+}
