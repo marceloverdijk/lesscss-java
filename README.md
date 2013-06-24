@@ -1,3 +1,10 @@
+Aim of this fork
+================
+The aim of this fork is to improve LESS resource loading mechanism.
+LESS resources are loaded via abstract Resource. Now it's possible to retrieve resources from files, classpath, URL, etc.
+
+
+
 Official LESS CSS Compiler for Java
 ===================================
 

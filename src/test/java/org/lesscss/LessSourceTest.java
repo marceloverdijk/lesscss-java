@@ -65,7 +65,7 @@ public class LessSourceTest {
     public void testNewLessSourceWithoutImports() throws Exception {
         mockFile(true,"content","absolutePath");
         
-        lessSource = new LessSource(file);
+        lessSource = new LessSource(new FileResource(file));
         
         assertEquals("absolutePath", lessSource.getAbsolutePath());
         assertEquals("content", lessSource.getContent());
@@ -86,7 +86,7 @@ public class LessSourceTest {
     @Test(expected = FileNotFoundException.class)
     public void testNewLessSourceFileNotFound() throws Exception {
         when(file.exists()).thenReturn(false);
-        lessSource = new LessSource(file); 
+        lessSource = new LessSource(new FileResource(file));
     }
     
     @Test
@@ -97,7 +97,7 @@ public class LessSourceTest {
         when(import2.getLastModifiedIncludingImports()).thenReturn(0l);
         when(import3.getLastModifiedIncludingImports()).thenReturn(0l);
         
-        lessSource = new LessSource(file);
+        lessSource = new LessSource(new FileResource(file));
         FieldUtils.writeField(lessSource, "imports", imports, true);
         
         assertEquals(1l, lessSource.getLastModifiedIncludingImports());
@@ -111,7 +111,7 @@ public class LessSourceTest {
         when(import2.getLastModifiedIncludingImports()).thenReturn(2l);
         when(import3.getLastModifiedIncludingImports()).thenReturn(0l);
         
-        lessSource = new LessSource(file);
+        lessSource = new LessSource(new FileResource(file));
         FieldUtils.writeField(lessSource, "imports", imports, true);
         
         assertEquals(2l, lessSource.getLastModifiedIncludingImports());
@@ -132,7 +132,7 @@ public class LessSourceTest {
     private String readLessSourceWithEncoding(String encoding) throws IOException, IllegalAccessException {
         URL sourceUrl = getClass().getResource("/compatibility/utf8-content.less");
         File sourceFile = new File(sourceUrl.getFile());
-        LessSource lessSource = new LessSource(sourceFile, Charset.forName(encoding));
+        LessSource lessSource = new LessSource(new FileResource(file), Charset.forName(encoding));
         return (String) FieldUtils.readField(lessSource, "content", true);
     }
 
