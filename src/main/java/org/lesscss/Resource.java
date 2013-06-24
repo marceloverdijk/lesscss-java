@@ -6,7 +6,8 @@ import java.io.InputStream;
 /**
  * LESS resource interface.
  *
- * <p>Abstracts {@link LessSource} from resource access technology.</p>
+ * <p>Abstracts {@link LessSource} from resource access technology. Makes it possible to load LESS resources from files,
+ * classpath resource, URL, etc.</p>
  *
  * @author Anton Pechinsky
  */
