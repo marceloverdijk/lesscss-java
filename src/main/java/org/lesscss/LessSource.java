@@ -36,7 +36,7 @@ public class LessSource {
     /**
      * The <code>Pattern</code> used to match imported files.
      */
-    private static final Pattern IMPORT_PATTERN = Pattern.compile("^(?!\\s*//\\s*)@import\\s+(url\\(|\\((less|css)\\))?\\s*(\"|')(.+)\\s*(\"|')(\\))?\\s*;.*$", MULTILINE);
+    private static final Pattern IMPORT_PATTERN = Pattern.compile("^(?!\\s*//\\s*).*(@import\\s+(url\\(|\\((less|css)\\))?\\s*(\"|')(.+)\\s*(\"|')(\\))?\\s*;).*$", MULTILINE);
 
     private Resource resource;
     private String content;
@@ -176,7 +176,7 @@ public class LessSource {
             if (importType.equals("less") || !css) {
                     LessSource importedLessSource = new LessSource(resource.createRelative(importedResource));
                     imports.put(importedResource, importedLessSource);
-                    normalizedContent = normalizedContent.substring(0, importMatcher.start()) + importedLessSource.getNormalizedContent() + normalizedContent.substring(importMatcher.end());
+                    normalizedContent = normalizedContent.substring(0, importMatcher.start(1)) + importedLessSource.getNormalizedContent() + normalizedContent.substring(importMatcher.end(1));
                     importMatcher = IMPORT_PATTERN.matcher(normalizedContent);
             }
         }
