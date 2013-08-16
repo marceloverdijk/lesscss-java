@@ -113,7 +113,7 @@ public class LessCompiler {
      * Sets the LESS JavaScript file used by the compiler.
      * Must be set before {@link #init()} is called.
      * 
-     * @param The LESS JavaScript file used by the compiler.
+     * @param lessJs LESS JavaScript file used by the compiler.
      */
     public synchronized void setLessJs(URL lessJs) {
         if (scope != null) {
@@ -194,7 +194,7 @@ public class LessCompiler {
      * If not set the platform default will be used.
      * Must be set before {@link #init()} is called.
      * 
-     * @param The character encoding used by the compiler when writing the output <code>File</code>.
+     * @param encoding character encoding used by the compiler when writing the output <code>File</code>.
      */
     public synchronized void setEncoding(String encoding) {
         if (scope != null) {
@@ -298,7 +298,7 @@ public class LessCompiler {
      * @throws IOException If the LESS file cannot be read.
      */
     public String compile(File input) throws IOException, LessException {
-        LessSource lessSource = new LessSource(input);
+        LessSource lessSource = new LessSource(new FileResource(input));
         return compile(lessSource);
     }
     
@@ -322,7 +322,7 @@ public class LessCompiler {
      * @throws IOException If the LESS file cannot be read or the output file cannot be written.
      */
     public void compile(File input, File output, boolean force) throws IOException, LessException {
-        LessSource lessSource = new LessSource(input);
+        LessSource lessSource = new LessSource(new FileResource(input));
         compile(lessSource, output, force);
     }
     
