@@ -169,7 +169,7 @@ public class LessSource {
     private void resolveImports() throws FileNotFoundException, IOException {
         Matcher importMatcher = IMPORT_PATTERN.matcher(normalizedContent);
         while (importMatcher.find()) {
-            String importedResource = importMatcher.group(4);
+            String importedResource = importMatcher.group(5);
             importedResource = importedResource.matches(".*\\.(le?|c)ss$") ? importedResource : importedResource + ".less";
             String importType = importMatcher.group(2)==null ? "less" : importMatcher.group(2);
             boolean css = importedResource.matches(".*css$");
