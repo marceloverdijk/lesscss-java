@@ -24,12 +24,31 @@ class SLF4JLessLoggerProvider implements LessLoggerProvider {
             logger.debug(msg);
         }
 
+        public void debug(String format, Object... args) {
+            if( logger.isDebugEnabled() ) {
+                logger.debug(String.format(format, args));
+            }
+        }
+
         public void info(String msg) {
             logger.info(msg);
+        }
+
+        public void info(String format, Object... args) {
+            if( logger.isInfoEnabled() ) {
+                logger.info( String.format(format, args) );
+            }
         }
 
         public void error(String msg, Throwable t) {
             logger.error(msg, t);
         }
+
+        public void error(String format, Object... args) {
+            if( logger.isErrorEnabled() ) {
+                logger.error( String.format(format, args) );
+            }
+        }
+
     }
 }

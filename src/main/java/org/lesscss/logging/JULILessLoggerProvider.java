@@ -27,12 +27,28 @@ class JULILessLoggerProvider implements LessLoggerProvider {
             logger.fine(msg);
         }
 
+        public void debug(String format, Object... args) {
+            if( isDebugEnabled() ) {
+                logger.fine( String.format(format, args) );
+            }
+        }
+
         public void info(String msg) {
             logger.info(msg);
         }
 
+        public void info(String format, Object... args) {
+            if( isInfoEnabled() ) {
+                logger.info(String.format(format,args));
+            }
+        }
+
         public void error(String msg, Throwable t) {
             logger.log(Level.SEVERE, msg, t);
+        }
+
+        public void error(String format, Object... args) {
+            logger.severe(String.format(format,args));
         }
     }
 }
