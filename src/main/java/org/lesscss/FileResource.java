@@ -37,4 +37,13 @@ public class FileResource implements Resource {
         File relativeFile = new File(file.getParentFile(), relativePath);
         return new FileResource(relativeFile);
     }
+
+    @Override
+    public String toString() {
+        return file.getAbsolutePath();
+    }
+
+    public String getName() {
+        return file.getAbsolutePath();
+    }
 }

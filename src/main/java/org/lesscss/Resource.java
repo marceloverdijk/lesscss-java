@@ -42,4 +42,11 @@ public interface Resource {
      * @return Resource relative resource
      */
     Resource createRelative(String relativeResourcePath);
+
+    /**
+     * Returns a unique name for this resource. (ie file name for files)
+     *
+     * @return the name of the resource
+     */
+    String getName();
 }
