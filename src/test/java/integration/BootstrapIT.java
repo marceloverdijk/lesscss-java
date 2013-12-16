@@ -55,6 +55,6 @@ public class BootstrapIT extends AbstractCompileIT {
 	}
 
 	private void testCompile(String lessFilename, String cssFilename, boolean compress) throws Exception {
-		testCompile(toFile("bootstrap/less/" + lessFilename + ".less"), toFile("bootstrap/css/" + cssFilename + ".css"), compress);
+		testCompile(toFile("bootstrap-2.3.2/less/" + lessFilename + ".less"), toFile("bootstrap-2.3.2/css/" + cssFilename + ".css"), compress);
 	}
 }

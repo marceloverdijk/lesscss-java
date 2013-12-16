@@ -66,7 +66,11 @@ public class CompatibilityIT extends AbstractCompileIT {
     
     @Test
     public void testImport() throws Exception {
-    	// TODO testCompile("import");
+    	testCompile("import");
+    }
+
+    @Test
+    public void testImportCustom() throws Exception {
         testCompile("import_custom");
     }
     

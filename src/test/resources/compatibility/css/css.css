@@ -60,7 +60,7 @@ p + h1 {
 #more-shorthands {
   margin: 0;
   padding: 1px 0 2px 0;
-  font: normal small/20px 'Trebuchet MS', Verdana, sans-serif;
+  font: normal small / 20px 'Trebuchet MS', Verdana, sans-serif;
 }
 .misc {
   -moz-border-radius: 2px;

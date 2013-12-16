@@ -24,7 +24,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -80,10 +79,10 @@ public class LessSourceTest {
     
     @Test(expected = IllegalArgumentException.class)
     public void testNewLessSourceFileNull() throws Exception {
-        lessSource = new LessSource(null); 
+        lessSource = new LessSource((Resource)null);
     }
     
-    @Test(expected = FileNotFoundException.class)
+    @Test(expected = IOException.class)
     public void testNewLessSourceFileNotFound() throws Exception {
         when(file.exists()).thenReturn(false);
         lessSource = new LessSource(new FileResource(file));
@@ -124,7 +123,7 @@ public class LessSourceTest {
     }
 
     @Test
-    public void testWithBadEncodinfLessFile() throws Exception {
+    public void testWithBadEncodingLessFile() throws Exception {
         String content = readLessSourceWithEncoding("ISO-8859-1");
         assertThat(content, not(containsString("↓")));
     }
