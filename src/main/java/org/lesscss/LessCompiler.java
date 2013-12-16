@@ -58,17 +58,14 @@ import org.mozilla.javascript.tools.shell.Global;
  */
 public class LessCompiler {
 
-    private static final String COMPILE_STRING = "function doIt(input, compress) { var result; var parser = new less.Parser(); parser.parse(input, function(e, tree) { if (e instanceof Object) { throw e; } ; result = tree.toCSS({compress: compress}); }); return result; }";
-
     private static final LessLogger logger = LessLoggerFactory.getLogger(LessCompiler.class);
 
     private URL envJs = LessCompiler.class.getClassLoader().getResource("META-INF/env.rhino.js");
-    private URL lessJs = LessCompiler.class.getClassLoader().getResource("META-INF/less.js");
+    private URL lessJs = LessCompiler.class.getClassLoader().getResource("META-INF/less-1.5.1.js");
+    private URL lesscJs = LessCompiler.class.getClassLoader().getResource("META-INF/lessc.js");
     private List<URL> customJs = Collections.emptyList();
     private boolean compress = false;
     private String encoding = null;
-    
-    private Function doIt;
     
     private Scriptable scope;
     
@@ -214,7 +211,7 @@ public class LessCompiler {
 
         try {
 	        Context cx = Context.enter();
-	        cx.setOptimizationLevel(-1); 
+	        cx.setOptimizationLevel(-1);
 	        cx.setLanguageVersion(Context.VERSION_1_7);
 	        
 	        Global global = new Global(); 
@@ -223,12 +220,13 @@ public class LessCompiler {
 	        scope = cx.initStandardObjects(global);
             scope.put("logger", scope, Context.toObject(logger, scope));
 	        
-	        List<URL> jsUrls = new ArrayList<URL>(2 + customJs.size());
-	        jsUrls.add(envJs);
-	        jsUrls.add(lessJs);
-	        jsUrls.addAll(customJs);
-	        
-	        for(URL url : jsUrls){
+            List<URL> jsUrls = new ArrayList<URL>();
+            jsUrls.add(envJs);
+            jsUrls.add(lessJs);
+            jsUrls.add(lesscJs);
+            jsUrls.addAll( customJs );
+
+	        for(URL url : jsUrls) {
 		        InputStreamReader inputStreamReader = new InputStreamReader(url.openConnection().getInputStream());
 		        try{
 		        	cx.evaluateReader(scope, inputStreamReader, url.toString(), 1, null);
@@ -236,7 +234,6 @@ public class LessCompiler {
 		        	inputStreamReader.close();
 		        }
 	        }
-            doIt = cx.compileFunction(scope, COMPILE_STRING, "doIt.js", 1, null);
         }
         catch (Exception e) {
             String message = "Failed to initialize LESS compiler.";
@@ -247,7 +244,7 @@ public class LessCompiler {
         }
         
         if (logger.isDebugEnabled()) {
-            logger.debug("Finished initialization of LESS compiler in " + (System.currentTimeMillis() - start) + " ms.");
+            logger.debug("Finished initialization of LESS compiler in %,d ms.%n", System.currentTimeMillis() - start);
         }
     }
     
@@ -258,6 +255,19 @@ public class LessCompiler {
      * @return The CSS.
      */
     public String compile(String input) throws LessException {
+        return compile( input, "<inline>");
+    }
+
+    /**
+     * Compiles the LESS input <code>String</code> to CSS, but specifies the source name <code>String</code>.
+     *
+     * @param input The LESS input <code>String</code> to compile
+     * @param name The source's name <code>String</code> to provide better error messages.
+     * @return the CSS.
+     *
+     * @throws LessException any error encountered by the compiler
+     */
+    public String compile(String input, String name) throws LessException {
     	synchronized(this){
 	        if (scope == null) {
 	            init();
@@ -268,10 +278,10 @@ public class LessCompiler {
         
         try {
         	Context cx = Context.enter();
-            Object result = doIt.call(cx, scope, null, new Object[]{input, compress});
-            
+            Function lessc = (Function)scope.get("lessc", scope);
+            Object result = lessc.call( cx, scope, null, new Object[] {name, input, compress});
             if (logger.isDebugEnabled()) {
-                logger.debug("Finished compilation of LESS source in " + (System.currentTimeMillis() - start) + " ms.");
+                logger.debug("Finished compilation of LESS source in %,d ms.", System.currentTimeMillis() - start );
             }
             
             return result.toString();
@@ -279,9 +289,36 @@ public class LessCompiler {
         catch (Exception e) {
             if (e instanceof JavaScriptException) {
                 Scriptable value = (Scriptable)((JavaScriptException)e).getValue();
-                if (value != null && ScriptableObject.hasProperty(value, "message")) {
-                    String message = ScriptableObject.getProperty(value, "message").toString();
-                    throw new LessException(message, e);
+                if (value != null ) {
+                    StringBuilder message = new StringBuilder();
+                    if( ScriptableObject.hasProperty(value, "filename") ) {
+                        message.append( ScriptableObject.getProperty(value, "filename").toString() );
+                    }
+
+                    if( ScriptableObject.hasProperty(value, "line") ) {
+                        message.append( "@(" );
+                        message.append( ScriptableObject.getProperty(value, "line").toString() );
+                        message.append( "," );
+                        message.append( ScriptableObject.getProperty(value, "column").toString() );
+                        message.append( ")" );
+                    }
+
+                    if( ScriptableObject.hasProperty(value, "message") ) {
+                        if( message.length() > 0 ) message.append(": ");
+                        message.append( ScriptableObject.getProperty(value, "message").toString() );
+                    }
+
+                    if( ScriptableObject.hasProperty(value, "extract") ) {
+                        List<String> lines = (List<String>) ScriptableObject.getProperty(value, "extract");
+                        for( String line : lines ) {
+                            if( line != null ) {
+                                message.append("\n");
+                                message.append( line );
+                            }
+                        }
+                    }
+
+                    throw new LessException(message.toString(), e);
                 }
             }
             throw new LessException(e);
@@ -333,7 +370,7 @@ public class LessCompiler {
      * @return The CSS.
      */
     public String compile(LessSource input) throws LessException {
-        return compile(input.getNormalizedContent());
+        return compile(input.getNormalizedContent(), input.getName());
     }
     
     /**
