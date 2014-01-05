@@ -41,7 +41,7 @@ public interface Resource {
      * @param relativeResourcePath String relative resource path
      * @return Resource relative resource
      */
-    Resource createRelative(String relativeResourcePath);
+    Resource createRelative(String relativeResourcePath) throws IOException;
 
     /**
      * Returns a unique name for this resource. (ie file name for files)

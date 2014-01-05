@@ -17,6 +17,7 @@ package org.lesscss;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -198,7 +199,7 @@ public class LessSource {
                 logger.debug("Importing %s", importedResource);
 
                 if( !imports.containsKey(importedResource) ) {
-                    LessSource importedLessSource = new LessSource(resource.createRelative(importedResource));
+                    LessSource importedLessSource = new LessSource(getImportedResource(importedResource));
                     imports.put(importedResource, importedLessSource);
 
                     normalizedContent = includeImportedContent(importedLessSource, importMatcher);
@@ -208,6 +209,18 @@ public class LessSource {
                     importMatcher = IMPORT_PATTERN.matcher(normalizedContent);
                 }
             }
+        }
+    }
+
+    private Resource getImportedResource(String importedResource) throws IOException {
+        try {
+            if( importedResource.startsWith("http:") ) {
+                return new HttpResource(importedResource);
+            } else {
+                return resource.createRelative(importedResource);
+            }
+        } catch (URISyntaxException e) {
+            throw new IOException( importedResource, e );
         }
     }
 
