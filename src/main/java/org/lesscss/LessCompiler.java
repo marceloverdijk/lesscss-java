@@ -14,19 +14,27 @@
  */
 package org.lesscss;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.lesscss.logging.LessLogger;
 import org.lesscss.logging.LessLoggerFactory;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.JavaScriptException;
+import org.mozilla.javascript.Script;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.tools.shell.Global;
@@ -60,14 +68,15 @@ public class LessCompiler {
 
     private static final LessLogger logger = LessLoggerFactory.getLogger(LessCompiler.class);
 
-    private URL envJs = LessCompiler.class.getClassLoader().getResource("META-INF/env.rhino.js");
-    private URL lessJs = LessCompiler.class.getClassLoader().getResource("META-INF/less-1.5.1.js");
-    private URL lesscJs = LessCompiler.class.getClassLoader().getResource("META-INF/lessc.js");
+    private URL lessJs = LessCompiler.class.getClassLoader().getResource("META-INF/less-rhino-1.5.1.js");
     private List<URL> customJs = Collections.emptyList();
-    private boolean compress = false;
+    private List<String> options = Collections.emptyList();
+    private Boolean compress = null;
     private String encoding = null;
     
     private Scriptable scope;
+    private ByteArrayOutputStream out;
+    private Function compiler; 
     
     /**
      * Constructs a new <code>LessCompiler</code>.
@@ -76,12 +85,31 @@ public class LessCompiler {
     }
     
     /**
+     * Constructs a new <code>LessCompiler</code>.
+     */
+    public LessCompiler(List<String> options) {
+    	this.options = new ArrayList<String>(options);
+    }
+    
+    public List<String> getOptions() {
+		return Collections.unmodifiableList(options);
+	}
+
+	public void setOptions(List<String> options) {
+        if (scope != null) {
+            throw new IllegalStateException("This method can only be called before init()");
+        }
+		
+		this.options = new ArrayList<String>(options);
+	}
+
+	/**
      * Returns the Envjs JavaScript file used by the compiler.
      * 
      * @return The Envjs JavaScript file used by the compiler.
      */
     public URL getEnvJs() {
-        return envJs;
+    	throw new IllegalArgumentException("EnvJs is no longer supported.  You don't need this if you use a less-rhino-<version>.js build like the default.");
     }
     
     /**
@@ -91,10 +119,7 @@ public class LessCompiler {
      * @param envJs The Envjs JavaScript file used by the compiler.
      */
     public synchronized void setEnvJs(URL envJs) {
-        if (scope != null) {
-            throw new IllegalStateException("This method can only be called before init()");
-        }
-        this.envJs = envJs;
+    	throw new IllegalArgumentException("EnvJs is no longer supported.  You don't need this if you use a less-rhino-<version>.js build like the default.");
     }
     
     /**
@@ -161,7 +186,9 @@ public class LessCompiler {
      * @return Whether the compiler will compress the CSS.
      */
     public boolean isCompress() {
-        return compress;
+        return (compress != null && compress.booleanValue()) ||
+        		options.contains("compress") ||
+        		options.contains("x");
     }
     
     /**
@@ -211,21 +238,24 @@ public class LessCompiler {
 
         try {
 	        Context cx = Context.enter();
-	        cx.setOptimizationLevel(-1);
+	        //cx.setOptimizationLevel(-1);
 	        cx.setLanguageVersion(Context.VERSION_1_7);
 	        
 	        Global global = new Global(); 
-	        global.init(cx); 
-	        
+	        global.init(cx); 	        
 	        scope = cx.initStandardObjects(global);
             scope.put("logger", scope, Context.toObject(logger, scope));
-	        
+            
+            out = new ByteArrayOutputStream();
+            global.setOut(new PrintStream(out));
+            
+	        // Load the compiler into a function we can run 
+            compiler = (Function) cx.compileReader(new InputStreamReader(lessJs.openConnection().getInputStream()), lessJs.toString(), 1, null);
+            
             List<URL> jsUrls = new ArrayList<URL>();
-            jsUrls.add(envJs);
-            jsUrls.add(lessJs);
-            jsUrls.add(lesscJs);
             jsUrls.addAll( customJs );
 
+            // load any custom JS
 	        for(URL url : jsUrls) {
 		        InputStreamReader inputStreamReader = new InputStreamReader(url.openConnection().getInputStream());
 		        try{
@@ -234,6 +264,7 @@ public class LessCompiler {
 		        	inputStreamReader.close();
 		        }
 	        }
+	        	        
         }
         catch (Exception e) {
             String message = "Failed to initialize LESS compiler.";
@@ -255,9 +286,9 @@ public class LessCompiler {
      * @return The CSS.
      */
     public String compile(String input) throws LessException {
-        return compile( input, "<inline>");
+    	return compile(input, "<inline>");
     }
-
+    
     /**
      * Compiles the LESS input <code>String</code> to CSS, but specifies the source name <code>String</code>.
      *
@@ -268,23 +299,73 @@ public class LessCompiler {
      * @throws LessException any error encountered by the compiler
      */
     public String compile(String input, String name) throws LessException {
-    	synchronized(this){
-	        if (scope == null) {
-	            init();
-	        }
+    	File tempFile = null;
+    	try {
+	    	 tempFile = File.createTempFile("tmp", "less.tmp");
+	    	PrintWriter writer = new PrintWriter(tempFile);
+	    	writer.print(input);
+	    	writer.close();
+	    	    	
+	        return compile( tempFile, "<inline>");
+    	} catch (IOException e) {
+            throw new LessException(e);
+    		
+    	} finally {
+    		tempFile.delete();
     	}
+    }
+
+    /**
+     * Compiles the LESS input <code>String</code> to CSS, but specifies the source name <code>String</code>. The entire
+     * method is synchronized so that two threads don't read the output at the same time.
+     *
+     * @param input The LESS input <code>String</code> to compile
+     * @param name The source's name <code>String</code> to provide better error messages.
+     * @return the CSS.
+     *
+     * @throws LessException any error encountered by the compiler
+     */
+    public synchronized String compile(File input, String name) throws LessException {
+        if (scope == null) {
+            init();
+        }
         
         long start = System.currentTimeMillis();
         
-        try {
+        try {        	
+        	
         	Context cx = Context.enter();
-            Function lessc = (Function)scope.get("lessc", scope);
-            Object result = lessc.call( cx, scope, null, new Object[] {name, input, compress});
+
+        	// The scope for compiling <input>
+        	ScriptableObject compileScope = (ScriptableObject)cx.newObject(scope);
+        	
+        	// give it a reference to the parent scope
+        	compileScope.setPrototype(scope);
+        	compileScope.setParentScope(null);
+
+        	// Copy the default options
+        	List<String> options = new ArrayList<String>(this.options);
+        	// Set up the arguments for <input>
+        	options.add(input.getAbsolutePath());
+        	
+        	// Add compress if the value is set for backward compatibility
+        	if (this.compress != null && this.compress.booleanValue()) {
+        		options.add("-x");
+        	}
+        	
+            Scriptable argsObj = cx.newArray(compileScope, options.toArray(new Object[options.size()]));
+            //Scriptable argsObj = cx.newArray(compileScope, new Object[] {"-ru", "c.less"});
+       	 	compileScope.defineProperty("arguments", argsObj, ScriptableObject.DONTENUM);
+       	 	
+       	 	// invoke the compiler - we don't pass arguments here because its a script not a real function
+       	 	// and we don't care about the result because its written to the output stream (out)
+            compiler.call(cx, compileScope, null, new Object[] {});        	
+        	
             if (logger.isDebugEnabled()) {
                 logger.debug("Finished compilation of LESS source in %,d ms.", System.currentTimeMillis() - start );
             }
             
-            return result.toString();
+            return StringUtils.isNotBlank(this.encoding) ? out.toString(encoding) : out.toString();
         }
         catch (Exception e) {
             if (e instanceof JavaScriptException) {
@@ -323,6 +404,10 @@ public class LessCompiler {
             }
             throw new LessException(e);
         }finally{
+        	// reset our ouput stream so we don't copy data on the next invocation
+        	out.reset();
+        	
+        	// we're done with this invocation
         	Context.exit();
         }
     }
@@ -335,8 +420,7 @@ public class LessCompiler {
      * @throws IOException If the LESS file cannot be read.
      */
     public String compile(File input) throws IOException, LessException {
-        LessSource lessSource = new LessSource(new FileResource(input));
-        return compile(lessSource);
+        return compile(input, input.getName());
     }
     
     /**
@@ -359,16 +443,12 @@ public class LessCompiler {
      * @throws IOException If the LESS file cannot be read or the output file cannot be written.
      */
     public void compile(File input, File output, boolean force) throws IOException, LessException {
-        LessSource lessSource = new LessSource(new FileResource(input));
-        compile(lessSource, output, force);
-    }
+        if (force || !output.exists() || output.lastModified() < input.lastModified()) {
+            String data = compile(input);
+            FileUtils.writeStringToFile(output, data, encoding);
+        }
+    }    
     
-    /**
-     * Compiles the input <code>LessSource</code> to CSS.
-     * 
-     * @param input The input <code>LessSource</code> to compile.
-     * @return The CSS.
-     */
     public String compile(LessSource input) throws LessException {
         return compile(input.getNormalizedContent(), input.getName());
     }
@@ -397,5 +477,5 @@ public class LessCompiler {
             String data = compile(input);
             FileUtils.writeStringToFile(output, data, encoding);
         }
-    }
+    }    
 }
