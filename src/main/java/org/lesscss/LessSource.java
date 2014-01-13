@@ -214,7 +214,7 @@ public class LessSource {
 
     private Resource getImportedResource(String importedResource) throws IOException {
         try {
-            if( importedResource.startsWith("http:") ) {
+            if( importedResource.startsWith("http:") || importedResource.startsWith("https:") ) {
                 return new HttpResource(importedResource);
             } else {
                 return resource.createRelative(importedResource);
