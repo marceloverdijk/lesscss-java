@@ -220,7 +220,7 @@ public class LessSource {
                 return resource.createRelative(importedResource);
             }
         } catch (URISyntaxException e) {
-            throw new IOException( importedResource, e );
+            throw (IOException)new IOException( importedResource ).initCause(e);
         }
     }
 

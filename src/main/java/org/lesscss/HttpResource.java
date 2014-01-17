@@ -48,7 +48,7 @@ public class HttpResource implements Resource {
         try {
             return new HttpResource(url.resolve(new URI(relativeResourcePath)));
         } catch (URISyntaxException e) {
-            throw new IOException( "Could not resolve " + url + " against " + relativeResourcePath, e );
+            throw (IOException)new IOException( "Could not resolve " + url + " against " + relativeResourcePath ).initCause(e);
         }
     }
 
