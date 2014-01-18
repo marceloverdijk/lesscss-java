@@ -32,4 +32,9 @@ public class ImportIT extends AbstractCompileIT {
     public void testImportSingleQuotes() throws Exception {
         testCompile(toFile("import/less/import_quotes.less"), toFile("import/css/import.css"));
     }
+
+    @Test
+    public void testHttpImport() throws Exception {
+        testCompile(toFile("import/less/http_import.less"), toFile("import/css/http_import.css"));
+    }
 }
