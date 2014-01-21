@@ -14,26 +14,15 @@
  */
 package integration;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import org.junit.Test;
 
-import org.lesscss.LessException;
+import org.junit.Test;
 
 public class LessExceptionIT extends AbstractCompileIT {
 
     @Test
     public void testException() throws Exception {
-        try {
-            lessCompiler.compile("a { color: @linkColor; }");
-            fail();
-        }
-        catch (LessException e) {
-            System.out.println("m:" + e.getMessage());
-            assertTrue(e instanceof LessException);
-            assertEquals("<inline>@(1.0,11.0): variable @linkColor is undefined\n" +
-                    "a { color: @linkColor; }", e.getMessage() );
-        }
+        String output = lessCompiler.compile("a { color: @linkColor; }");
+        assertTrue(output.startsWith("NameError: variable @linkColor is undefined in"));
     }
 }

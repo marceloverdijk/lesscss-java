@@ -24,6 +24,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -43,6 +44,7 @@ public class LessSourceTest {
     private LessSource lessSource;
     
     @Mock private File file;
+    @Mock private FileInputStream fileInputStream;
 
     @Mock private LessSource import1;
     @Mock private LessSource import2;
@@ -136,13 +138,14 @@ public class LessSourceTest {
     }
 
 
-    private File mockFile(boolean fileExists, String content, String absolutePath) throws IOException {
+    private File mockFile(boolean fileExists, String content, String absolutePath) throws Exception, IOException {
         when(file.exists()).thenReturn(fileExists);
         mockStatic(FileUtils.class);
         when(FileUtils.readFileToString(file)).thenReturn(content);
         when(file.getAbsolutePath()).thenReturn(absolutePath);
         when(file.lastModified()).thenReturn(lastModified);
         when(file.getParent()).thenReturn("folder");
+        whenNew(FileInputStream.class).withArguments(file).thenReturn(fileInputStream);
         return file;
     }
 }
