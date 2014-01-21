@@ -25,6 +25,7 @@ import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
 import static org.powermock.api.mockito.PowerMockito.whenNew;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -78,7 +79,7 @@ public class LessCompilerTest {
     
     @Mock private URL lessJsFile;
     @Mock private URLConnection lessJsURLConnection;
-    private static final String lessJsURLToString = "less.js";
+    private static final String lessJsURLToString = "less-rhino-1.5.1.js";
     @Mock private InputStream lessJsInputStream;
     @Mock private InputStreamReader lessJsInputStreamReader;
     
@@ -87,6 +88,7 @@ public class LessCompilerTest {
     @Mock private LessSource lessSource;
     
     @Mock private ScriptableObject compileScope;
+    @Mock private ByteArrayOutputStream out;
     
     private String less = "less";
     private String css = "css";
@@ -103,8 +105,7 @@ public class LessCompilerTest {
     
     @Test
     public void testNewLessCompiler() throws Exception {
-        assertEquals(LessCompiler.class.getClassLoader().getResource("META-INF/env.rhino.js"), FieldUtils.readField(lessCompiler, "envJs", true));
-        assertEquals(LessCompiler.class.getClassLoader().getResource("META-INF/less.js"), FieldUtils.readField(lessCompiler, "lessJs", true));
+        assertEquals(LessCompiler.class.getClassLoader().getResource("META-INF/less-rhino-1.5.1.js"), FieldUtils.readField(lessCompiler, "lessJs", true));
         assertEquals(Collections.EMPTY_LIST, FieldUtils.readField(lessCompiler, "customJs", true));
     }
     
@@ -149,7 +150,7 @@ public class LessCompilerTest {
         whenNew(Global.class).withNoArguments().thenReturn(global);
         
         when(cx.initStandardObjects(global)).thenReturn(scope);
-        when(cx.compileReader(new InputStreamReader(lessJsInputStream), lessJsURLToString, 1, null)).thenReturn(compiler);
+        when(cx.compileReader(lessJsInputStreamReader, lessJsURLToString, 1, null)).thenReturn(compiler);
         
         when(envJsFile.openConnection()).thenReturn(envJsURLConnection);
         when(envJsFile.toString()).thenReturn(envJsURLToString);
@@ -166,21 +167,21 @@ public class LessCompilerTest {
         
         verifyStatic();
         Context.enter();
-        verify(cx).setOptimizationLevel(-1);
+        //verify(cx).setOptimizationLevel(-1);
         verify(cx).setLanguageVersion(Context.VERSION_1_7);
         
         verifyNew(Global.class).withNoArguments();
         verify(global).init(cx);
         
         // verify(envJsFile).openConnection();
-        verify(envJsURLConnection).getInputStream();
-        verifyNew(InputStreamReader.class).withArguments(envJsInputStream);
-        verify(cx).evaluateReader(scope, envJsInputStreamReader, envJsURLToString, 1, null);
+        //verify(envJsURLConnection).getInputStream();
+        //verifyNew(InputStreamReader.class).withArguments(envJsInputStream);
+        //verify(cx).evaluateReader(scope, envJsInputStreamReader, envJsURLToString, 1, null);
         
         // verify(lessJsFile).openConnection();
         verify(lessJsURLConnection).getInputStream();
         verifyNew(InputStreamReader.class).withArguments(lessJsInputStream);
-        verify(cx).evaluateReader(scope, lessJsInputStreamReader, lessJsURLToString, 1, null);
+        verify(cx).compileReader(lessJsInputStreamReader, lessJsURLToString, 1, null);
     }
     
     @Test(expected = IllegalArgumentException.class)
@@ -191,6 +192,7 @@ public class LessCompilerTest {
         whenNew(Global.class).withNoArguments().thenReturn(global);
         
         when(cx.initStandardObjects(global)).thenReturn(scope);
+        when(cx.compileReader(lessJsInputStreamReader, lessJsURLToString, 1, null)).thenReturn(compiler);
         
         when(envJsFile.openConnection()).thenThrow(new IOException());
         
@@ -219,7 +221,7 @@ public class LessCompilerTest {
         whenNew(Global.class).withNoArguments().thenReturn(global);
         
         when(cx.initStandardObjects(global)).thenReturn(scope);
-        when(cx.compileReader(new InputStreamReader(lessJsInputStream), lessJsURLToString, 1, null)).thenReturn(compiler);
+        when(cx.compileReader(lessJsInputStreamReader, lessJsURLToString, 1, null)).thenReturn(compiler);
         
         when(envJsFile.openConnection()).thenReturn(envJsURLConnection);
         when(envJsFile.toString()).thenReturn(envJsURLToString);
@@ -231,32 +233,31 @@ public class LessCompilerTest {
         when(lessJsURLConnection.getInputStream()).thenReturn(lessJsInputStream);
         whenNew(InputStreamReader.class).withArguments(lessJsInputStream).thenReturn(lessJsInputStreamReader);
 
-        when(compiler.call(cx, compileScope, null, new Object[] {})).thenReturn(css);
+    	when(cx.newObject(scope)).thenReturn(compileScope);
+    	whenNew(ByteArrayOutputStream.class).withNoArguments().thenReturn(out);
+    	when(out.toString()).thenReturn(css);
         
-        lessCompiler.setEnvJs(envJsFile);
         lessCompiler.setLessJs(lessJsFile);
         
         assertEquals(css, lessCompiler.compile(less));
         
         //verifyStatic();
-        verify(cx).setOptimizationLevel(-1);
+        //verify(cx).setOptimizationLevel(-1);
         verify(cx).setLanguageVersion(Context.VERSION_1_7);
         
         verifyNew(Global.class).withNoArguments();
         verify(global).init(cx);
         
         // verify(envJsFile).openConnection();
-        verify(envJsURLConnection).getInputStream();
-        verifyNew(InputStreamReader.class).withArguments(envJsInputStream);
-        verify(cx).evaluateReader(scope, envJsInputStreamReader, envJsURLToString, 1, null);
+        //verify(envJsURLConnection).getInputStream();
+        //verifyNew(InputStreamReader.class).withArguments(envJsInputStream);
+        //verify(cx).evaluateReader(scope, envJsInputStreamReader, envJsURLToString, 1, null);
         
         // verify(lessJsFile).openConnection();
         verify(lessJsURLConnection).getInputStream();
         verifyNew(InputStreamReader.class).withArguments(lessJsInputStream);
-        verify(cx).evaluateReader(scope, lessJsInputStreamReader, lessJsURLToString, 1, null);
-        
-        verify(cx).compileFunction(scope, COMPILE_STRING, "doIt.js", 1, null);
-        
+        verify(cx).compileReader(lessJsInputStreamReader, lessJsURLToString, 1, null);
+                
         verify(compiler).call(cx, compileScope, null, new Object[] {});
     }
     
@@ -266,8 +267,10 @@ public class LessCompilerTest {
         when(Context.enter()).thenReturn(cx);
         FieldUtils.writeField(lessCompiler, "scope", scope, true);
         FieldUtils.writeField(lessCompiler, "compiler", compiler, true);
+        FieldUtils.writeField(lessCompiler, "out", out, true);
+    	when(cx.newObject(scope)).thenReturn(compileScope);
         
-        when(compiler.call(cx, compileScope, null, new Object[] {})).thenReturn(css);
+    	when(out.toString()).thenReturn(css);
         
         assertEquals(css, lessCompiler.compile(less));
         
@@ -280,17 +283,16 @@ public class LessCompilerTest {
         when(Context.enter()).thenReturn(cx);
         FieldUtils.writeField(lessCompiler, "scope", scope, true);
         FieldUtils.writeField(lessCompiler, "compiler", compiler, true);
+        FieldUtils.writeField(lessCompiler, "out", out, true);
+    	when(cx.newObject(scope)).thenReturn(compileScope);
         
         whenNew(LessSource.class).withArguments(inputFile).thenReturn(lessSource);
         when(lessSource.getNormalizedContent()).thenReturn(less);
         
-        when(compiler.call(cx, compileScope, null, new Object[] {})).thenReturn(css);
+    	when(out.toString()).thenReturn(css);
         
         assertEquals(css, lessCompiler.compile(inputFile));
         
-        verifyNew(LessSource.class).withArguments(inputFile);
-        verify(lessSource).getNormalizedContent();
-
         verify(compiler).call(cx, compileScope, null, new Object[] {});
     }
     
@@ -300,19 +302,18 @@ public class LessCompilerTest {
         when(Context.enter()).thenReturn(cx);
         FieldUtils.writeField(lessCompiler, "scope", scope, true);
         FieldUtils.writeField(lessCompiler, "compiler", compiler, true);
+        FieldUtils.writeField(lessCompiler, "out", out, true);
+    	when(cx.newObject(scope)).thenReturn(compileScope);
         
         whenNew(LessSource.class).withArguments(inputFile).thenReturn(lessSource);
         when(lessSource.getNormalizedContent()).thenReturn(less);
         
-        when(compiler.call(cx, compileScope, null, new Object[] {})).thenReturn(css);
+    	when(out.toString()).thenReturn(css);
         
         mockStatic(FileUtils.class);
         
         lessCompiler.compile(inputFile, outputFile);
-        
-        verifyNew(LessSource.class).withArguments(inputFile);
-        verify(lessSource).getNormalizedContent();
-        
+                
         verify(compiler).call(cx, compileScope, null, new Object[] {});
         
         verifyStatic();
@@ -325,19 +326,18 @@ public class LessCompilerTest {
         when(Context.enter()).thenReturn(cx);
         FieldUtils.writeField(lessCompiler, "scope", scope, true);
         FieldUtils.writeField(lessCompiler, "compiler", compiler, true);
+        FieldUtils.writeField(lessCompiler, "out", out, true);
+    	when(cx.newObject(scope)).thenReturn(compileScope);
         
         whenNew(LessSource.class).withArguments(inputFile).thenReturn(lessSource);
         when(lessSource.getNormalizedContent()).thenReturn(less);
         
-        when(compiler.call(cx, compileScope, null, new Object[] {})).thenReturn(css);
+    	when(out.toString()).thenReturn(css);
         
         mockStatic(FileUtils.class);
         
         lessCompiler.compile(inputFile, outputFile, true);
-        
-        verifyNew(LessSource.class).withArguments(inputFile);
-        verify(lessSource).getNormalizedContent();
-        
+                
         verify(compiler).call(cx, compileScope, null, new Object[] {});
         
         verifyStatic();
@@ -350,24 +350,22 @@ public class LessCompilerTest {
         when(Context.enter()).thenReturn(cx);
         FieldUtils.writeField(lessCompiler, "scope", scope, true);
         FieldUtils.writeField(lessCompiler, "compiler", compiler, true);
+        FieldUtils.writeField(lessCompiler, "out", out, true);
+    	when(cx.newObject(scope)).thenReturn(compileScope);
         
         when(outputFile.exists()).thenReturn(false);
         
         whenNew(LessSource.class).withArguments(inputFile).thenReturn(lessSource);
         when(lessSource.getNormalizedContent()).thenReturn(less);
         
-        when(compiler.call(cx, compileScope, null, new Object[] {})).thenReturn(css);
+    	when(out.toString()).thenReturn(css);
         
         mockStatic(FileUtils.class);
         
         lessCompiler.compile(inputFile, outputFile, false);
         
-        verifyNew(LessSource.class).withArguments(inputFile);
-        
         verify(outputFile).exists();
-        
-        verify(lessSource).getNormalizedContent();
-        
+                
         verify(compiler).call(cx, compileScope, null, new Object[] {});
         
         verifyStatic();
@@ -380,7 +378,7 @@ public class LessCompilerTest {
         when(Context.enter()).thenReturn(cx);
         FieldUtils.writeField(lessCompiler, "scope", scope, true);
         FieldUtils.writeField(lessCompiler, "compiler", compiler, true);
-        
+        FieldUtils.writeField(lessCompiler, "out", out, true);
     	when(cx.newObject(scope)).thenReturn(compileScope);
         
         when(outputFile.exists()).thenReturn(true);
@@ -388,20 +386,15 @@ public class LessCompilerTest {
         
         when(inputFile.lastModified()).thenReturn(2l);
                 
-        when(compiler.call(cx, compileScope, null, new Object[] {})).thenReturn(css);
+    	when(out.toString()).thenReturn(css);
         
         mockStatic(FileUtils.class);
         
         lessCompiler.compile(inputFile, outputFile, false);
-        
-        verifyNew(LessSource.class).withArguments(inputFile);
-        
+                
         verify(outputFile).exists();
         verify(outputFile).lastModified();
-        
-        verify(lessSource).getLastModifiedIncludingImports();
-        verify(lessSource).getNormalizedContent();
-        
+                
         verify(compiler).call(cx, compileScope, null, new Object[] {});
         
         verifyStatic();
@@ -414,6 +407,8 @@ public class LessCompilerTest {
         when(Context.enter()).thenReturn(cx);
         FieldUtils.writeField(lessCompiler, "scope", scope, true);
         FieldUtils.writeField(lessCompiler, "compiler", compiler, true);
+        FieldUtils.writeField(lessCompiler, "out", out, true);
+    	when(cx.newObject(scope)).thenReturn(compileScope);
         
         whenNew(LessSource.class).withArguments(inputFile).thenReturn(lessSource);
         
@@ -423,13 +418,10 @@ public class LessCompilerTest {
         when(lessSource.getLastModifiedIncludingImports()).thenReturn(1l);
         
         lessCompiler.compile(inputFile, outputFile, false);
-        
-        verifyNew(LessSource.class).withArguments(inputFile);
-        
+                
         verify(outputFile).exists();
         verify(outputFile).lastModified();
         
-        verify(lessSource).getLastModifiedIncludingImports();
     }
     
     @Test
@@ -438,10 +430,12 @@ public class LessCompilerTest {
         when(Context.enter()).thenReturn(cx);
         FieldUtils.writeField(lessCompiler, "scope", scope, true);
         FieldUtils.writeField(lessCompiler, "compiler", compiler, true);
+        FieldUtils.writeField(lessCompiler, "out", out, true);
+    	when(cx.newObject(scope)).thenReturn(compileScope);
         
         when(lessSource.getNormalizedContent()).thenReturn(less);
         
-        when(compiler.call(cx, compileScope, null, new Object[] {})).thenReturn(css);
+    	when(out.toString()).thenReturn(css);
         
         assertEquals(css, lessCompiler.compile(lessSource));
         
@@ -456,10 +450,12 @@ public class LessCompilerTest {
         when(Context.enter()).thenReturn(cx);
         FieldUtils.writeField(lessCompiler, "scope", scope, true);
         FieldUtils.writeField(lessCompiler, "compiler", compiler, true);
+        FieldUtils.writeField(lessCompiler, "out", out, true);
+    	when(cx.newObject(scope)).thenReturn(compileScope);
         
         when(lessSource.getNormalizedContent()).thenReturn(less);
         
-        when(compiler.call(cx, compileScope, null, new Object[] {})).thenReturn(css);
+    	when(out.toString()).thenReturn(css);
         
         mockStatic(FileUtils.class);
         
@@ -479,10 +475,12 @@ public class LessCompilerTest {
         when(Context.enter()).thenReturn(cx);
         FieldUtils.writeField(lessCompiler, "scope", scope, true);
         FieldUtils.writeField(lessCompiler, "compiler", compiler, true);
+        FieldUtils.writeField(lessCompiler, "out", out, true);
+    	when(cx.newObject(scope)).thenReturn(compileScope);
         
         when(lessSource.getNormalizedContent()).thenReturn(less);
         
-        when(compiler.call(cx, compileScope, null, new Object[] {})).thenReturn(css);
+    	when(out.toString()).thenReturn(css);
         
         mockStatic(FileUtils.class);
         
@@ -502,12 +500,14 @@ public class LessCompilerTest {
         when(Context.enter()).thenReturn(cx);
         FieldUtils.writeField(lessCompiler, "scope", scope, true);
         FieldUtils.writeField(lessCompiler, "compiler", compiler, true);
+        FieldUtils.writeField(lessCompiler, "out", out, true);
+    	when(cx.newObject(scope)).thenReturn(compileScope);
         
         when(outputFile.exists()).thenReturn(false);
         
         when(lessSource.getNormalizedContent()).thenReturn(less);
         
-        when(compiler.call(cx, compileScope, null, new Object[] {})).thenReturn(css);
+    	when(out.toString()).thenReturn(css);
         
         mockStatic(FileUtils.class);
         
@@ -529,6 +529,8 @@ public class LessCompilerTest {
         when(Context.enter()).thenReturn(cx);
         FieldUtils.writeField(lessCompiler, "scope", scope, true);
         FieldUtils.writeField(lessCompiler, "compiler", compiler, true);
+        FieldUtils.writeField(lessCompiler, "out", out, true);
+    	when(cx.newObject(scope)).thenReturn(compileScope);
         
         when(outputFile.exists()).thenReturn(true);
         when(outputFile.lastModified()).thenReturn(1l);
@@ -536,7 +538,7 @@ public class LessCompilerTest {
         when(lessSource.getLastModifiedIncludingImports()).thenReturn(2l);
         when(lessSource.getNormalizedContent()).thenReturn(less);
         
-        when(compiler.call(cx, compileScope, null, new Object[] {})).thenReturn(css);
+    	when(out.toString()).thenReturn(css);
         
         mockStatic(FileUtils.class);
         
@@ -560,6 +562,8 @@ public class LessCompilerTest {
         when(Context.enter()).thenReturn(cx);
         FieldUtils.writeField(lessCompiler, "scope", scope, true);
         FieldUtils.writeField(lessCompiler, "compiler", compiler, true);
+        FieldUtils.writeField(lessCompiler, "out", out, true);
+    	when(cx.newObject(scope)).thenReturn(compileScope);
         
         when(outputFile.exists()).thenReturn(true);
         when(outputFile.lastModified()).thenReturn(2l);
@@ -580,9 +584,11 @@ public class LessCompilerTest {
         when(Context.enter()).thenReturn(cx);
         FieldUtils.writeField(lessCompiler, "scope", scope, true);
         FieldUtils.writeField(lessCompiler, "compiler", compiler, true);
+        FieldUtils.writeField(lessCompiler, "out", out, true);
+    	when(cx.newObject(scope)).thenReturn(compileScope);
         
         JavaScriptException javaScriptException = new JavaScriptException(null, null, 0);
-        when(compiler.call(cx, compileScope, null, new Object[] {})).thenReturn(javaScriptException);
+        when(compiler.call(cx, compileScope, null, new Object[] {})).thenThrow(javaScriptException);
         
         assertEquals(css, lessCompiler.compile(less));
     }
@@ -594,8 +600,10 @@ public class LessCompilerTest {
         lessCompiler.setCompress(true);
         FieldUtils.writeField(lessCompiler, "scope", scope, true);
         FieldUtils.writeField(lessCompiler, "compiler", compiler, true);
+        FieldUtils.writeField(lessCompiler, "out", out, true);
+    	when(cx.newObject(scope)).thenReturn(compileScope);
         
-        when(compiler.call(cx, compileScope, null, new Object[] {})).thenReturn(css);
+    	when(out.toString()).thenReturn(css);
         
         assertEquals(css, lessCompiler.compile(less));
         
@@ -609,19 +617,18 @@ public class LessCompilerTest {
         lessCompiler.setEncoding("utf-8");
         FieldUtils.writeField(lessCompiler, "scope", scope, true);
         FieldUtils.writeField(lessCompiler, "compiler", compiler, true);
+        FieldUtils.writeField(lessCompiler, "out", out, true);
+    	when(cx.newObject(scope)).thenReturn(compileScope);
         
         whenNew(LessSource.class).withArguments(inputFile).thenReturn(lessSource);
         when(lessSource.getNormalizedContent()).thenReturn(less);
         
-        when(compiler.call(cx, compileScope, null, new Object[] {})).thenReturn(css);
+    	when(out.toString("utf-8")).thenReturn(css);
         
         mockStatic(FileUtils.class);
         
         lessCompiler.compile(inputFile, outputFile);
-        
-        verifyNew(LessSource.class).withArguments(inputFile);
-        verify(lessSource).getNormalizedContent();
-        
+                
         verify(compiler).call(cx, compileScope, null, new Object[] {});
         
         verifyStatic();

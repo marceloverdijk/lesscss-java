@@ -301,11 +301,9 @@ public class LessCompiler {
     public String compile(String input, String name) throws LessException {
     	File tempFile = null;
     	try {
-	    	 tempFile = File.createTempFile("tmp", "less.tmp");
-	    	PrintWriter writer = new PrintWriter(tempFile);
-	    	writer.print(input);
-	    	writer.close();
-	    	    	
+	        tempFile = File.createTempFile("tmp", "less.tmp");
+	        FileUtils.writeStringToFile(tempFile, input, this.encoding);
+	    	 	    	    	
 	        return compile( tempFile, "<inline>");
     	} catch (IOException e) {
             throw new LessException(e);
