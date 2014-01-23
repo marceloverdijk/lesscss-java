@@ -17,10 +17,12 @@ package org.lesscss;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.SequenceInputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,7 +70,8 @@ public class LessCompiler {
 
     private static final LessLogger logger = LessLoggerFactory.getLogger(LessCompiler.class);
 
-    private URL lessJs = LessCompiler.class.getClassLoader().getResource("META-INF/less-rhino-1.5.1.js");
+    private URL lessJs = LessCompiler.class.getClassLoader().getResource("META-INF/less-rhino-1.6.1.js");
+    private URL lesscJs = LessCompiler.class.getClassLoader().getResource("META-INF/lessc-rhino-1.6.1.js");
     private List<URL> customJs = Collections.emptyList();
     private List<String> options = Collections.emptyList();
     private Boolean compress = null;
@@ -142,6 +145,28 @@ public class LessCompiler {
             throw new IllegalStateException("This method can only be called before init()");
         }
         this.lessJs = lessJs;
+    }
+    
+    /**
+     * Returns the LESSC JavaScript file used by the compiler.
+     * COMPILE_STRING
+     * @return The LESSC JavaScript file used by the compiler.
+     */
+    public URL getLesscJs() {
+        return lesscJs;
+    }
+    
+    /**
+     * Sets the LESSC JavaScript file used by the compiler.
+     * Must be set before {@link #init()} is called.
+     * 
+     * @param lesscJs LESSC JavaScript file used by the compiler.
+     */
+    public synchronized void setLesscJs(URL lesscJs) {
+        if (scope != null) {
+            throw new IllegalStateException("This method can only be called before init()");
+        }
+        this.lesscJs = lesscJs;
     }
     
 	/**
@@ -249,21 +274,24 @@ public class LessCompiler {
             out = new ByteArrayOutputStream();
             global.setOut(new PrintStream(out));
             
-	        // Load the compiler into a function we can run 
-            compiler = (Function) cx.compileReader(new InputStreamReader(lessJs.openConnection().getInputStream()), lessJs.toString(), 1, null);
+            // Combine all of the streams (less, custom, lessc) into one big stream
+            List<InputStream> streams = new ArrayList<InputStream>();
             
-            List<URL> jsUrls = new ArrayList<URL>();
-            jsUrls.addAll( customJs );
-
-            // load any custom JS
-	        for(URL url : jsUrls) {
-		        InputStreamReader inputStreamReader = new InputStreamReader(url.openConnection().getInputStream());
-		        try{
-		        	cx.evaluateReader(scope, inputStreamReader, url.toString(), 1, null);
-		        }finally{
-		        	inputStreamReader.close();
-		        }
+            // less should be first
+            streams.add(lessJs.openConnection().getInputStream());
+            
+            // then the custom js so it has a chance to add any hooks
+	        for(URL url : customJs) {
+	        	streams.add(url.openConnection().getInputStream());
 	        }
+	        
+	        // then the lessc so we can do the compile
+	        streams.add(lesscJs.openConnection().getInputStream());
+	        
+	        InputStreamReader reader = new InputStreamReader(new SequenceInputStream(Collections.enumeration(streams)));
+            
+	        // Load the streams into a function we can run 
+            compiler = (Function) cx.compileReader(reader, lessJs.toString(), 1, null);            
 	        	        
         }
         catch (Exception e) {

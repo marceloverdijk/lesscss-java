@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.SequenceInputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
@@ -79,7 +80,7 @@ public class LessCompilerTest {
     
     @Mock private URL lessJsFile;
     @Mock private URLConnection lessJsURLConnection;
-    private static final String lessJsURLToString = "less-rhino-1.5.1.js";
+    private static final String lessJsURLToString = "less-rhino-1.6.1.js";
     @Mock private InputStream lessJsInputStream;
     @Mock private InputStreamReader lessJsInputStreamReader;
     
@@ -105,7 +106,8 @@ public class LessCompilerTest {
     
     @Test
     public void testNewLessCompiler() throws Exception {
-        assertEquals(LessCompiler.class.getClassLoader().getResource("META-INF/less-rhino-1.5.1.js"), FieldUtils.readField(lessCompiler, "lessJs", true));
+        assertEquals(LessCompiler.class.getClassLoader().getResource("META-INF/less-rhino-1.6.1.js"), FieldUtils.readField(lessCompiler, "lessJs", true));
+        assertEquals(LessCompiler.class.getClassLoader().getResource("META-INF/lessc-rhino-1.6.1.js"), FieldUtils.readField(lessCompiler, "lesscJs", true));
         assertEquals(Collections.EMPTY_LIST, FieldUtils.readField(lessCompiler, "customJs", true));
     }
     
@@ -180,8 +182,7 @@ public class LessCompilerTest {
         
         // verify(lessJsFile).openConnection();
         verify(lessJsURLConnection).getInputStream();
-        verifyNew(InputStreamReader.class).withArguments(lessJsInputStream);
-        verify(cx).compileReader(lessJsInputStreamReader, lessJsURLToString, 1, null);
+        verify(cx).compileReader(null, lessJsURLToString, 1, null);
     }
     
     @Test(expected = IllegalArgumentException.class)
@@ -221,17 +222,16 @@ public class LessCompilerTest {
         whenNew(Global.class).withNoArguments().thenReturn(global);
         
         when(cx.initStandardObjects(global)).thenReturn(scope);
-        when(cx.compileReader(lessJsInputStreamReader, lessJsURLToString, 1, null)).thenReturn(compiler);
+        when(cx.compileReader(null, lessJsURLToString, 1, null)).thenReturn(compiler);
         
         when(envJsFile.openConnection()).thenReturn(envJsURLConnection);
         when(envJsFile.toString()).thenReturn(envJsURLToString);
         when(envJsURLConnection.getInputStream()).thenReturn(envJsInputStream);
-        whenNew(InputStreamReader.class).withArguments(envJsInputStream).thenReturn(envJsInputStreamReader);
         
         when(lessJsFile.openConnection()).thenReturn(lessJsURLConnection);
         when(lessJsFile.toString()).thenReturn(lessJsURLToString);
         when(lessJsURLConnection.getInputStream()).thenReturn(lessJsInputStream);
-        whenNew(InputStreamReader.class).withArguments(lessJsInputStream).thenReturn(lessJsInputStreamReader);
+        whenNew(InputStreamReader.class).withArguments(lessJsInputStream).thenReturn(lessJsInputStreamReader);        
 
     	when(cx.newObject(scope)).thenReturn(compileScope);
     	whenNew(ByteArrayOutputStream.class).withNoArguments().thenReturn(out);
@@ -255,8 +255,7 @@ public class LessCompilerTest {
         
         // verify(lessJsFile).openConnection();
         verify(lessJsURLConnection).getInputStream();
-        verifyNew(InputStreamReader.class).withArguments(lessJsInputStream);
-        verify(cx).compileReader(lessJsInputStreamReader, lessJsURLToString, 1, null);
+        verify(cx).compileReader(null, lessJsURLToString, 1, null);
                 
         verify(compiler).call(cx, compileScope, null, new Object[] {});
     }
