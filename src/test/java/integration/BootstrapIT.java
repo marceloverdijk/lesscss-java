@@ -36,16 +36,6 @@ public class BootstrapIT extends AbstractCompileIT {
 		testCompile("bootstrap", "bootstrap.min", true);
 	}
 
-	@Test
-	public void testResponsive() throws Exception {
-		testCompile("responsive", "bootstrap-responsive");
-	}
-
-	@Test
-	public void testResponsiveMin() throws Exception {
-		testCompile("responsive", "bootstrap-responsive.min", true);
-	}
-
 	private void testCompile(String filename) throws Exception {
 		testCompile(filename, filename);
 	}
@@ -55,6 +45,6 @@ public class BootstrapIT extends AbstractCompileIT {
 	}
 
 	private void testCompile(String lessFilename, String cssFilename, boolean compress) throws Exception {
-		testCompile(toFile("bootstrap-2.3.2/less/" + lessFilename + ".less"), toFile("bootstrap-2.3.2/css/" + cssFilename + ".css"), compress);
+		testCompile(toFile("bootstrap-3.1.1/less/" + lessFilename + ".less"), toFile("bootstrap-3.1.1/css/" + cssFilename + ".css"), compress);
 	}
 }
