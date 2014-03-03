@@ -1,7 +1,7 @@
 Official LESS CSS Compiler for Java
 ===================================
 
-**Latest release**  1.3.3 - compatible with less 1.3.3
+**Latest release**  1.6.1-SNAPSHOT - compatible with less 1.6.1
 
 
 
@@ -13,6 +13,9 @@ Look at the simple example below to compile LESS to CSS:
  
     // Instantiate the LESS compiler
     LessCompiler lessCompiler = new LessCompiler();
+
+    // Instantiate the LESS compiler with some compiler options
+    LessCompiler lessCompiler = new LessCompiler(Arrays.asList("--relative-urls", "--strict-math=on"));
     
     // Compile LESS input string to CSS output string
     String css = lessCompiler.compile("@color: #4D926F; #header { color: @color; }");
@@ -33,7 +36,7 @@ Maven users should add the library using the following dependency:
     <dependency>
       <groupId>org.lesscss</groupId>
       <artifactId>lesscss</artifactId>
-      <version>1.3.3</version>
+      <version>1.6.1-SNAPSHOT</version>
     </dependency>
 
 (lesscss-java is in the Maven Central repository.)
