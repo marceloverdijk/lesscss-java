@@ -61,7 +61,7 @@ public class LessCompiler {
     private static final LessLogger logger = LessLoggerFactory.getLogger(LessCompiler.class);
 
     private URL envJs = LessCompiler.class.getClassLoader().getResource("META-INF/env.rhino.js");
-    private URL lessJs = LessCompiler.class.getClassLoader().getResource("META-INF/less-1.5.1.js");
+    private URL lessJs = LessCompiler.class.getClassLoader().getResource("META-INF/less.js");
     private URL lesscJs = LessCompiler.class.getClassLoader().getResource("META-INF/lessc.js");
     private List<URL> customJs = Collections.emptyList();
     private boolean compress = false;

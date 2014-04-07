@@ -1,3 +1,7 @@
+# 1.6.2
+
+ - support for lesscss 1.6.2
+
 
 # 1.4.1
 

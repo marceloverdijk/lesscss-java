@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.lesscss</groupId>
     <artifactId>lesscss</artifactId>
-    <version>1.5.1-SNAPSHOT</version>
+    <version>1.6.2</version>
     <packaging>jar</packaging>
     <name>Official LESS CSS Compiler for Java</name>
     <description>Official LESS CSS Compiler for Java</description>
@@ -19,7 +19,15 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
-    
+
+    <distributionManagement>
+        <repository>
+            <uniqueVersion>false</uniqueVersion>
+            <id>googlecode</id>
+            <url>svn:https://me-ceap-maven.googlecode.com/svn/maven</url>
+        </repository>
+    </distributionManagement>
+
     <dependencies>
         <dependency>
             <groupId>commons-io</groupId>
@@ -158,6 +166,14 @@
                 </configuration>
                 </plugin>
         </plugins>
+
+        <extensions>
+            <extension>
+                <groupId>com.google.code.maven-svn-wagon</groupId>
+                <artifactId>maven-svn-wagon</artifactId>
+                <version>1.4</version>
+            </extension>
+        </extensions>
     </build>
     
     <licenses>
