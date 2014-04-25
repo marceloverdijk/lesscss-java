@@ -14,6 +14,9 @@ public class FileResource implements Resource {
 
     private File file;
 
+    private File sourceDirectory;
+    
+    
     public FileResource(File file) {
         if (file == null) {
             throw new IllegalArgumentException("File must not be null!");
@@ -21,6 +24,10 @@ public class FileResource implements Resource {
         this.file = file;
     }
 
+    public FileResource(File sourceDirectory,File file) {
+      this(file);
+      this.sourceDirectory=sourceDirectory;
+    }
     public boolean exists() {
         return file.exists();
     }
@@ -34,7 +41,15 @@ public class FileResource implements Resource {
     }
 
     public Resource createRelative(String relativePath) {
-        File relativeFile = new File(file.getParentFile(), relativePath);
+      
+      File relativeFile;
+      if (relativePath.startsWith("/"))
+      {
+        relativeFile = new File(sourceDirectory, relativePath);
+      }else
+      {
+         relativeFile = new File(file.getParentFile(), relativePath);
+      }
         return new FileResource(relativeFile);
     }
 
