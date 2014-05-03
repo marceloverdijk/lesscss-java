@@ -5,3 +5,4 @@
 *.iml
 *.ipr
 target/
+dependency-reduced-pom.xml

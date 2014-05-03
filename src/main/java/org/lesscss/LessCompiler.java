@@ -19,24 +19,19 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.io.SequenceInputStream;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.lesscss.logging.LessLogger;
 import org.lesscss.logging.LessLoggerFactory;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.JavaScriptException;
-import org.mozilla.javascript.Script;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.tools.shell.Global;
@@ -332,7 +327,7 @@ public class LessCompiler {
 	        tempFile = File.createTempFile("tmp", "less.tmp");
 	        FileUtils.writeStringToFile(tempFile, input, this.encoding);
 	    	 	    	    	
-	        return compile( tempFile, "<inline>");
+	        return compile( tempFile, name);
     	} catch (IOException e) {
             throw new LessException(e);
     		
@@ -391,7 +386,7 @@ public class LessCompiler {
                 logger.debug("Finished compilation of LESS source in %,d ms.", System.currentTimeMillis() - start );
             }
             
-            return StringUtils.isNotBlank(this.encoding) ? out.toString(encoding) : out.toString();
+            return this.encoding != null && !this.encoding.equals("") ? out.toString(encoding) : out.toString();
         }
         catch (Exception e) {
             if (e instanceof JavaScriptException) {
