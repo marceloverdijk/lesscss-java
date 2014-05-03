@@ -80,7 +80,7 @@ public class LessCompilerTest {
     
     @Mock private URL lessJsFile;
     @Mock private URLConnection lessJsURLConnection;
-    private static final String lessJsURLToString = "less-rhino-1.6.1.js";
+    private static final String lessJsURLToString = "less-rhino-1.7.0.js";
     @Mock private InputStream lessJsInputStream;
     @Mock private InputStreamReader lessJsInputStreamReader;
     
@@ -106,8 +106,8 @@ public class LessCompilerTest {
     
     @Test
     public void testNewLessCompiler() throws Exception {
-        assertEquals(LessCompiler.class.getClassLoader().getResource("META-INF/less-rhino-1.6.1.js"), FieldUtils.readField(lessCompiler, "lessJs", true));
-        assertEquals(LessCompiler.class.getClassLoader().getResource("META-INF/lessc-rhino-1.6.1.js"), FieldUtils.readField(lessCompiler, "lesscJs", true));
+        assertEquals(LessCompiler.class.getClassLoader().getResource("META-INF/less-rhino-1.7.0.js"), FieldUtils.readField(lessCompiler, "lessJs", true));
+        assertEquals(LessCompiler.class.getClassLoader().getResource("META-INF/lessc-rhino-1.7.0.js"), FieldUtils.readField(lessCompiler, "lesscJs", true));
         assertEquals(Collections.EMPTY_LIST, FieldUtils.readField(lessCompiler, "customJs", true));
     }
     

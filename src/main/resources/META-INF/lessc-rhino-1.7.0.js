@@ -1,4 +1,4 @@
-/* LESS.js v1.6.1 RHINO | Copyright (c) 2009-2014, Alexis Sellier <self@cloudhead.net> */
+/* LESS.js v1.7.0 RHINO | Copyright (c) 2009-2014, Alexis Sellier <self@cloudhead.net> */
 
 /*global name:true, less, loadStyleSheet, os */
 
@@ -57,7 +57,8 @@ function formatError(ctx, options) {
 function writeError(ctx, options) {
     options = options || {};
     if (options.silent) { return; }
-    print(formatError(ctx, options));
+    var message = formatError(ctx, options);
+    throw new Error(message);
 }
 
 function loadStyleSheet(sheet, callback, reload, remaining) {
