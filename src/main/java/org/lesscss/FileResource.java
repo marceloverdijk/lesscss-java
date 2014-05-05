@@ -43,7 +43,7 @@ public class FileResource implements Resource {
     public Resource createRelative(String relativePath) {
       
       File relativeFile;
-      if (relativePath.startsWith("/"))
+      if (sourceDirectory != null && relativePath.startsWith("/"))
       {
         relativeFile = new File(sourceDirectory, relativePath);
       }else
