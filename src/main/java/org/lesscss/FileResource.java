@@ -46,11 +46,12 @@ public class FileResource implements Resource {
       if (sourceDirectory != null && relativePath.startsWith("/"))
       {
         relativeFile = new File(sourceDirectory, relativePath);
+        return new FileResource(sourceDirectory, relativeFile);
       }else
       {
          relativeFile = new File(file.getParentFile(), relativePath);
+         return new FileResource(relativeFile);
       }
-        return new FileResource(relativeFile);
     }
 
     @Override
