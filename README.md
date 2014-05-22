@@ -1,7 +1,7 @@
 Official LESS CSS Compiler for Java
 ===================================
 
-**Latest release**  1.7.0.1.0-SNAPSHOT - The 1.0 release that is compatible with less 1.7.0 
+**Latest release**  1.7.0.1.0 - The 1.0 release that is compatible with less 1.7.0 
 
 
 LESS CSS Compiler for Java is a library to compile LESS sources to CSS stylesheets.
@@ -35,7 +35,7 @@ Maven users should add the library using the following dependency:
     <dependency>
       <groupId>org.lesscss</groupId>
       <artifactId>lesscss</artifactId>
-      <version>1.7.0.1.0-SNAPSHOT</version>
+      <version>1.7.0.1.0</version>
     </dependency>
 
 (lesscss-java is in the Maven Central repository.)
