@@ -184,6 +184,8 @@
                             <artifactSet>
                                 <excludes>
                                     <exclude>org.mozilla:rhino</exclude>
+                                    <exclude>org.slf4j:slf4j-api</exclude>
+                                    <exclude>org.slf4j:slf4j-simple</exclude>
                                 </excludes>
                             </artifactSet>
                             <relocations>
