@@ -34,9 +34,8 @@ public class ImportIT extends AbstractCompileIT {
         testCompile(toFile("import/less/import_quotes.less"), toFile("import/css/import.css"));
     }
 
-    @Test @Ignore
+    @Test
     public void testHttpImport() throws Exception {
-    	// I would appreciate it if someone finds a fix for this test.
         testCompile(toFile("import/less/http_import.less"), toFile("import/css/http_import.css"));
     }
 }

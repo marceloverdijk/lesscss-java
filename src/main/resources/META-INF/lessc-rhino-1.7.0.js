@@ -86,22 +86,36 @@ function loadStyleSheet(sheet, callback, reload, remaining) {
         }
     });
 }
-
+ 
 less.Parser.fileLoader = function (file, currentFileInfo, callback, env) {
+    var href;
+	var path;
 
-    var href = file;
-    if (currentFileInfo && currentFileInfo.currentDirectory && !/^\//.test(file)) {
-        href = less.modules.path.join(currentFileInfo.currentDirectory, file);
-    }
-
-    var path = less.modules.path.dirname(href);
+	var isFileUrl = file.indexOf('http') == 0;
+	var isCurrentDirUrl = currentFileInfo && currentFileInfo.currentDirectory.indexOf('http') == 0;
+	var isUrl = isFileUrl || isCurrentDirUrl;
+	// Build href from file
+	if (isFileUrl) {
+		href = file;
+    	path = href.substring(0, href.lastIndexOf('/'));
+	}
+	// Build href from current dir + file just concat
+	else if (isCurrentDirUrl) {
+		href = currentFileInfo.currentDirectory + '/' + file;
+    	path = href.substring(0, href.lastIndexOf('/'));
+	}
+	// Use path join method
+	else {
+		href = less.modules.path.join(currentFileInfo.currentDirectory, file);
+        path = less.modules.path.dirname(href);
+	}
 
     var newFileInfo = {
         currentDirectory: path + '/',
         filename: href
     };
 
-    if (currentFileInfo) {
+    if (currentFileInfo && !isFileUrl) {
         newFileInfo.entryPath = currentFileInfo.entryPath;
         newFileInfo.rootpath = currentFileInfo.rootpath;
         newFileInfo.rootFilename = currentFileInfo.rootFilename;
@@ -112,7 +126,7 @@ less.Parser.fileLoader = function (file, currentFileInfo, callback, env) {
         newFileInfo.rootFilename = href;
         newFileInfo.relativeUrls = env.relativeUrls;
     }
-
+    
     var j = file.lastIndexOf('/');
     if(newFileInfo.relativeUrls && !/^(?:[a-z-]+:|\/)/.test(file) && j != -1) {
         var relativeSubDirectory = file.slice(0, j+1);
@@ -120,13 +134,22 @@ less.Parser.fileLoader = function (file, currentFileInfo, callback, env) {
     }
     newFileInfo.currentDirectory = path;
     newFileInfo.filename = href;
-
     var data = null;
-    try {
-        data = readFile(href);
-    } catch (e) {
-        callback({ type: 'File', message: "'" + less.modules.path.basename(href) + "' wasn't found" });
-        return;
+    if (isUrl) {
+        try {
+            data = readUrl(href);
+        } catch (e) {
+            callback({ type: 'File', message: "'" + href + "' wasn't found" });
+            return;
+        }
+    }
+    else {
+        try {
+            data = readFile(href);
+        } catch (e) {
+            callback({ type: 'File', message: "'" + less.modules.path.basename(href) + "' wasn't found" });
+            return;
+        }
     }
 
     try {
