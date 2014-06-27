@@ -39,4 +39,9 @@ public class ImportIT extends AbstractCompileIT {
     	// I would appreciate it if someone finds a fix for this test.
         testCompile(toFile("import/less/http_import.less"), toFile("import/css/http_import.css"));
     }
+    
+    @Test
+    public void testImportReference() throws Exception {
+        testCompile(toFile("import/less/import_reference.less"), toFile("import/css/import_reference.css"));
+    }    
 }
