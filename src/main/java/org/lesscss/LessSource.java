@@ -100,7 +100,11 @@ public class LessSource {
     public LessSource(File input) throws IOException {
         this( new FileResource(input) );
     }
-
+    
+    public LessSource(File sourceDirectory, File input) throws IOException {
+      this( new FileResource(sourceDirectory, input) );
+  }
+    
     private String loadResource(Resource resource, Charset charset) throws IOException {
         BOMInputStream inputStream = new BOMInputStream( resource.getInputStream() );
         try {
