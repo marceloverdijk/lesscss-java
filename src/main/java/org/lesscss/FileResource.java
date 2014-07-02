@@ -7,59 +7,60 @@ import java.io.InputStream;
 
 /**
  * File based implementation of {@link Resource}.
- *
+ * 
  * @author Anton Pechinsky
  */
 public class FileResource implements Resource {
 
-    private File file;
+  private final File file;
 
-    private File sourceDirectory;
-    
-    
-    public FileResource(File file) {
-        if (file == null) {
-            throw new IllegalArgumentException("File must not be null!");
-        }
-        this.file = file;
-    }
+  private File sourceDirectory;
 
-    public FileResource(File sourceDirectory,File file) {
-      this(file);
-      this.sourceDirectory=sourceDirectory;
+  public FileResource(File file) {
+    if (file == null) {
+      throw new IllegalArgumentException("File must not be null!");
     }
-    public boolean exists() {
-        return file.exists();
-    }
+    this.file = file;
+  }
 
-    public InputStream getInputStream() throws IOException {
-        return new FileInputStream(file);
+  public FileResource(File sourceDirectory, File file) {
+    this(file);
+    if (sourceDirectory == null) {
+      throw new IllegalArgumentException("sourceDirectory must not be null!");
     }
+    this.sourceDirectory = sourceDirectory;
+  }
 
-    public long lastModified() {
-        return file.lastModified();
-    }
+  public boolean exists() {
+    return file.exists();
+  }
 
-    public Resource createRelative(String relativePath) {
-      
-      File relativeFile;
-      if (sourceDirectory != null && relativePath.startsWith("/"))
-      {
-        relativeFile = new File(sourceDirectory, relativePath);
-        return new FileResource(sourceDirectory, relativeFile);
-      }else
-      {
-         relativeFile = new File(file.getParentFile(), relativePath);
-         return new FileResource(relativeFile);
-      }
-    }
+  public InputStream getInputStream() throws IOException {
+    return new FileInputStream(file);
+  }
 
-    @Override
-    public String toString() {
-        return file.getAbsolutePath();
-    }
+  public long lastModified() {
+    return file.lastModified();
+  }
 
-    public String getName() {
-        return file.getAbsolutePath();
+  public Resource createRelative(String relativePath) {
+
+    File relativeFile;
+    if (sourceDirectory != null && relativePath.startsWith("/")) {
+      relativeFile = new File(sourceDirectory, relativePath);
+      return new FileResource(sourceDirectory, relativeFile);
+    } else {
+      relativeFile = new File(file.getParentFile(), relativePath);
+      return new FileResource(relativeFile);
     }
+  }
+
+  @Override
+  public String toString() {
+    return file.getAbsolutePath();
+  }
+
+  public String getName() {
+    return file.getAbsolutePath();
+  }
 }
