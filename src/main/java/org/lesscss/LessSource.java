@@ -42,7 +42,7 @@ public class LessSource {
     /**
      * The <code>Pattern</code> used to match imported files.
      */
-    private static final Pattern IMPORT_PATTERN = Pattern.compile("^(?!\\s*//\\s*).*(@import\\s+(url\\(|\\((less|css|once|inline|reference|multiple)\\))?\\s*(\"|')(.+)\\s*(\"|')(\\))?(.*);).*$", MULTILINE);
+    private static final Pattern IMPORT_PATTERN = Pattern.compile("^(?!\\s*//\\s*).*(@import\\s+(url\\(|\\((less|css)\\))?\\s*(\"|')(.+)\\s*(\"|')(\\))?(.*);).*$", MULTILINE);
 
     private Resource resource;
     private String content;
@@ -192,10 +192,14 @@ public class LessSource {
     private void resolveImports() throws IOException {
         Matcher importMatcher = IMPORT_PATTERN.matcher(normalizedContent);
         while (importMatcher.find()) {
+            // Extract the import type, grab the file name to import
             String importedResource = importMatcher.group(5);
+            // Check whether a file ending is present (file.css | file.less), if not, add .less
             importedResource = importedResource.matches(".*\\.(le?|c)ss$") ? importedResource : importedResource + ".less";
+            // Get the import type. First check if directive is set. If so, take it. If none directive is set, use file ending
             String importType = importMatcher.group(3)==null ? importedResource.substring(importedResource.lastIndexOf(".") + 1) : importMatcher.group(3);
-            if (importType.equals("less")) {
+            // Only process files that are LESS imports (recognized by Import directive or file ending in "importType")
+			if (importType.equals("less") || importType.equals("reference") || importType.equals("once") || importType.equals("multiple")) {
                 logger.debug("Importing %s", importedResource);
 
                 if( !imports.containsKey(importedResource) ) {
