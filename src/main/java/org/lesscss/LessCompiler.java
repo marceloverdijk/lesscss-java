@@ -332,7 +332,7 @@ public class LessCompiler {
             throw new LessException(e);
     		
     	} finally {
-    		tempFile.delete();
+    		if (tempFile != null) tempFile.delete();
     	}
     }
 
