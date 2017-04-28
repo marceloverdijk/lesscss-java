@@ -446,5 +446,4 @@ function writeFile(filename, content) {
         writeError(e, options);
         quit(1);
     }
-    console.log("done");
 }(arguments));
