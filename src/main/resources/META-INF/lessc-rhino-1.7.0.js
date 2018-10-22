@@ -176,6 +176,11 @@ function writeFile(filename, content) {
         }
         return true;
     };
+    
+    var parseVariableOption = function(option, variables) {
+        var parts = option.split('=', 2);
+        variables[parts[0]] = parts[1];
+    };      
 
     var checkBooleanArg = function(arg) {
         var onOff = /^((on|t|true|y|yes)|(off|f|false|n|no))$/i.exec(arg);
@@ -337,6 +342,22 @@ function writeFile(filename, content) {
                     options.strictUnits = checkBooleanArg(match[2]);
                 }
                 break;
+            case "global-var":
+                if (checkArgFunc(arg, match[2])) {
+                    if (!options.globalVars) {
+                        options.globalVars = {};
+                    }
+                    parseVariableOption(match[2], options.globalVars);
+                }
+                break;
+            case "modify-var":
+                if (checkArgFunc(arg, match[2])) {
+                    if (!options.modifyVars) {
+                        options.modifyVars = {};
+                    }
+                    parseVariableOption(match[2], options.modifyVars);
+                }
+                break;                 
             default:
                 console.log('invalid option ' + arg);
                 continueProcessing = false;
@@ -440,7 +461,7 @@ function writeFile(filename, content) {
                 }
                 quit(0);
             }
-        });
+        }, options);
     }
     catch(e) {
         writeError(e, options);
